@@ -36,8 +36,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       <div className="login-grid">
         <aside className="brand-side">
           <div className="brand-inner">
-            <div className="brand-badge">Engex</div>
-            <h1 className="brand-title">Engex Exhibition</h1>
+            <div className="brand-badge">EngEX</div>
+            <h1 className="brand-title">EngEX Exhibition</h1>
             <p className="brand-subtitle">
               Where innovation meets experience. Join exhibitors and visitors
               for an immersive showcase of technology, products, and ideas.
@@ -56,7 +56,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         <div className="login-card">
           <div className="login-card-header">
             <h2 className="login-title">Welcome back</h2>
-            <p className="login-subtitle">Sign in to manage your Engex booth</p>
+            <p className="login-subtitle">Sign in to manage your EngEX booth</p>
           </div>
 
           <form onSubmit={handleLogin} className="login-form">

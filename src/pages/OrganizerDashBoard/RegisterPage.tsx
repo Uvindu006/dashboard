@@ -47,8 +47,8 @@ const RegisterPage: React.FC = () => {
       <div className="auth-grid">
         <aside className="brand-side">
           <div className="brand-inner">
-            <div className="brand-badge">Engex</div>
-            <h1 className="brand-title">Create your Engex account</h1>
+            <div className="brand-badge">EngEX</div>
+            <h1 className="brand-title">Create your EngEX account</h1>
             <p className="brand-subtitle">
               Register to showcase, manage, and analyze your exhibition presence.
             </p>
@@ -63,7 +63,7 @@ const RegisterPage: React.FC = () => {
         <div className="auth-card">
           <div className="auth-card-header">
             <h2 className="auth-title">Create account</h2>
-            <p className="auth-subtitle">Join Engex Exhibition</p>
+            <p className="auth-subtitle">Join EngEX Exhibition</p>
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
