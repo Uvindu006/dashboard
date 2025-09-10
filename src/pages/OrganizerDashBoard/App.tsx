@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import OrganizerDashBoard from "./OrganizerDashBoard";
 import LoginPage from "./LoginPage";
+import RegisterPage from "./RegisterPage";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,13 +25,30 @@ function App() {
   };
 
   return (
-    <>
-      {isAuthenticated ? (
-        <OrganizerDashBoard onLogout={handleLogout} />
-      ) : (
-        <LoginPage onLogin={handleLogin} />
-      )}
-    </>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <OrganizerDashBoard onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/" replace />
+          ) : (
+            <LoginPage onLogin={handleLogin} />
+          )
+        }
+      />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
+    </Routes>
   );
 }
 

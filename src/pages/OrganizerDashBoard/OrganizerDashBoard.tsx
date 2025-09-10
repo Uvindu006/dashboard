@@ -45,7 +45,7 @@ function OrganizerDashBoard({ onLogout }: OrganizerDashBoardProps) {
         <main className="flex-1 p-6 overflow-y-auto">
           <Routes>
             {/* Default → redirect to /overview */}
-            <Route path="/" element={<Navigate to="/overview" replace />} />
+            <Route index element={<Navigate to="overview" replace />} />
             <Route path="overview" element={<OverviewPage />} />
             <Route path="heatmaps" element={<HeatmapsPage />} />
             <Route path="feedback" element={<FeedbackPage />} />
