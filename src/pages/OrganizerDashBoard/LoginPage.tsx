@@ -19,7 +19,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     if (email && password) {
       localStorage.setItem("authUser", JSON.stringify({ email }));
       onLogin();
-      // Navigate to dashboard after login
       navigate("/");
     } else {
       alert("Please enter valid email and password");

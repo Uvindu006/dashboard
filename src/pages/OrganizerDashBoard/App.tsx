@@ -36,16 +36,7 @@ function App() {
           )
         }
       />
-      <Route
-        path="/login"
-        element={
-          isAuthenticated ? (
-            <Navigate to="/" replace />
-          ) : (
-            <LoginPage onLogin={handleLogin} />
-          )
-        }
-      />
+      <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
     </Routes>
