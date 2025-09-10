@@ -17,7 +17,7 @@ const ExportWidget: React.FC = () => {
 
   const exportOptions = [
     { title: "Analytics Report", description: "Overview with charts & stats", formats: ["PDF", "Excel"], icon: FileText, color: "blue" },
-    { title: "Attendance Data", description: "Detailed attendee info", formats: ["CSV", "Excel"], icon: FileSpreadsheet, color: "green" },
+    { title: "Attendance Data", description: "Detailed attendee info", formats: ["PDF", "Excel"], icon: FileSpreadsheet, color: "green" },
     { title: "Heatmap Images", description: "Visual heatmap representations", formats: ["PNG", "SVG"], icon: Image, color: "purple" },
     { title: "Event Summary", description: "Executive summary for stakeholders", formats: ["PDF"], icon: Calendar, color: "orange" },
   ];

@@ -31,7 +31,7 @@ function OrganizerDashBoard({ onLogout }: OrganizerDashBoardProps) {
         <Header
           eventInfo={{
             title: "EngEX 2025",
-            date: "30 Aug 2025",
+            date: "23 Sep 2025",
             location: "University of Peradeniya",
           }}
           userInfo={{
