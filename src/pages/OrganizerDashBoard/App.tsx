@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import OrganizerDashBoard from "./OrganizerDashBoard";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
+import OverviewPage from "./OverviewPage";
+import HeatmapsPage from "./HeatmapsPage";
+import FeedbackPage from "./FeedbackPage";
+import ExportPage from "./ExportPage";
+import BuildingsPage from "./BuildingsPage";
+import EventsPage from "./EventsPage";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
@@ -35,7 +41,15 @@ function App() {
             <Navigate to="/login" replace />
           )
         }
-      />
+      >
+        <Route index element={<OverviewPage />} />
+        <Route path="overview" element={<OverviewPage />} />
+        <Route path="heatmaps" element={<HeatmapsPage />} />
+        <Route path="feedback" element={<FeedbackPage />} />
+        <Route path="export" element={<ExportPage />} />
+        <Route path="buildings" element={<BuildingsPage />} />
+        <Route path="events" element={<EventsPage />} />
+      </Route>
       <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
