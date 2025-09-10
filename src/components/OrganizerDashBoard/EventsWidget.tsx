@@ -39,8 +39,8 @@ const EventsWidget: React.FC = () => {
 
       const mapped = res.data.map((ev: any) => {
         // ⚡ Don't use new Date() → it causes timezone shifts
-        const startParts = ev.start_time ? ev.start_time.split("T") : ["", ""];
-        const endParts = ev.end_time ? ev.end_time.split("T") : ["", ""];
+        const startParts = ev.start_time ? ev.start_time.split(" ") : ["", ""];
+        const endParts = ev.end_time ? ev.end_time.split(" ") : ["", ""];
 
         return {
           id: ev.event_id,

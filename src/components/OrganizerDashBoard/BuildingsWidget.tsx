@@ -3,7 +3,7 @@ import axios from "axios";
 import { Plus, ChevronDown, ChevronUp, Edit, Trash } from "lucide-react";
 
 interface Building {
-  id: string; // local ID for frontend state
+  id: string; // Local ID for frontend state
   building_id: number;
   zone_id: number;
   building_name: string;
@@ -26,11 +26,11 @@ const BuildingsWidget: React.FC = () => {
   // Fetch all buildings on component mount
   useEffect(() => {
     axios
-      .get("http://localhost:5000/buildings")
+      .get("http://localhost:5000/buildings")  // Fetch building data
       .then((res) => {
         const formatted = res.data.map((b: any) => ({
           ...b,
-          id: b.building_id.toString(), // use backend building_id as unique id
+          id: b.building_id.toString(), // Use building_id as unique id
         }));
         setBuildings(formatted);
       })
@@ -39,8 +39,9 @@ const BuildingsWidget: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.building_name) return;
 
+    // Validation
+    if (!formData.building_name) return;
     if (formData.building_id < 0 || formData.zone_id < 0) {
       alert("IDs cannot be negative");
       return;
@@ -48,7 +49,7 @@ const BuildingsWidget: React.FC = () => {
 
     try {
       if (formData.id) {
-        // update existing building
+        // Update existing building
         await axios.put(
           `http://localhost:5000/buildings/${formData.building_id}`,
           {
@@ -57,12 +58,12 @@ const BuildingsWidget: React.FC = () => {
             description: formData.description,
           }
         );
-
+        // Update the buildings list in the UI
         setBuildings((prev) =>
           prev.map((b) => (b.id === formData.id ? formData : b))
         );
       } else {
-        // create new building
+        // Create new building
         const res = await axios.post("http://localhost:5000/buildings", {
           zone_id: formData.zone_id,
           building_name: formData.building_name,
@@ -72,8 +73,8 @@ const BuildingsWidget: React.FC = () => {
         if (res.status === 200) {
           const newBuilding = {
             ...formData,
-            id: Date.now().toString(),
-            building_id: Date.now(), // placeholder, backend assigns real ID
+            id: Date.now().toString(),  // Generate temporary ID
+            building_id: res.data.building_id, // Get real building_id from response
           };
           setBuildings((prev) => [...prev, newBuilding]);
         }
@@ -82,7 +83,7 @@ const BuildingsWidget: React.FC = () => {
       console.error("Error saving building:", err);
     }
 
-    // reset form
+    // Reset form after submission
     setFormData({
       id: "",
       building_id: 0,
@@ -103,10 +104,8 @@ const BuildingsWidget: React.FC = () => {
     if (!building) return;
 
     try {
-      await axios.delete(
-        `http://localhost:5000/buildings/${building.building_id}`
-      );
-
+      await axios.delete(`http://localhost:5000/buildings/${building.building_id}`);
+      // Remove deleted building from state
       setBuildings((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
       console.error("Error deleting building:", err);
@@ -124,7 +123,7 @@ const BuildingsWidget: React.FC = () => {
         </button>
       </div>
 
-      {/* Form modal */}
+      {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -139,7 +138,7 @@ const BuildingsWidget: React.FC = () => {
                   min="0"
                   value={formData.building_id}
                   className="w-full border p-2 rounded"
-                  disabled={!!formData.id} // disable when editing
+                  disabled={!!formData.id} // Disable when editing
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -208,7 +207,7 @@ const BuildingsWidget: React.FC = () => {
         </div>
       )}
 
-      {/* Buildings list */}
+      {/* Buildings List */}
       <div className="space-y-3">
         {buildings.map((b) => (
           <div key={b.id} className="border rounded-lg bg-white shadow-sm">
