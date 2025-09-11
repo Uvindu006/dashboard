@@ -29,7 +29,7 @@ const OverviewWidget: React.FC = () => {
       icon: Clock,
       color: "purple",
     },
-    {
+     {
       label: "Engagement Rate",
       value: building === "all" ? "87%" : "72%",
       change: "+5%",
@@ -73,7 +73,7 @@ const OverviewWidget: React.FC = () => {
           onChange={(e) => setZone(e.target.value)}
           className="border rounded-lg px-3 py-2"
         >
-          <option value="all">All Zones</option>
+          
           <option value="zone1">Zone 1</option>
           <option value="zone2">Zone 2</option>
         </select>
@@ -86,7 +86,7 @@ const OverviewWidget: React.FC = () => {
           onChange={(e) => setBuilding(e.target.value)}
           className="border rounded-lg px-3 py-2"
         >
-          <option value="all">All Buildings</option>
+        
           <option value="booth1">Building 1</option>
           <option value="booth2">Building 2</option>
           <option value="booth3">Building 3</option>
@@ -98,7 +98,7 @@ const OverviewWidget: React.FC = () => {
           onChange={(e) => setTimeRange(e.target.value)}
           className="border rounded-lg px-3 py-2"
         >
-          <option value="realtime">Realtime</option>
+          
           <option value="1h">Last 1 Hour</option>
           <option value="3h">Last 3 Hours</option>
           <option value="5h">Last 5 Hours</option>
