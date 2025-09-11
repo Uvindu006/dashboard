@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { BarChart3, Map as HeatMap, MessageSquare, Download, Building2, X, Menu, LucideIcon, Calendar } from 'lucide-react';
 
-type Section = 'overview' | 'heatmaps' | 'feedback' | 'export' | 'buildings';
+type Section = 'overview' | 'heatmaps' | 'feedback' | 'export' | 'buildings' | 'organizers';  // Added 'organizers'
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ const navigationItems: Array<{ id: Section; label: string; icon: LucideIcon; pat
   { id: 'export', label: 'Export', icon: Download, path: 'export' },
   { id: 'buildings', label: 'Buildings', icon: Building2, path: 'buildings' },
   { id: 'events', label: 'Events', icon: Calendar, path: 'events' },
-
+  { id: 'organizers', label: 'Organizers', icon: Building2, path: 'organizers' }, // Added 'Organizers' entry
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
@@ -91,10 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                         }
                       }}
                     >
-                      <div className={`
-                        p-2.5 rounded-lg transition-all duration-200
-                        group-hover:bg-blue-100 group-hover:text-blue-600
-                      `}>
+                      <div className={`p-2.5 rounded-lg transition-all duration-200 group-hover:bg-blue-100 group-hover:text-blue-600`}>
                         <Icon size={20} />
                       </div>
                       <span className="font-medium">{item.label}</span>
