@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Plus, ChevronDown, ChevronUp, Edit, Trash } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, Edit, Trash, X } from "lucide-react";
 import axios from "axios";
 
 interface EventItem {
   id: number;
   title: string;
-  category: string;
+  categories: string[];
   date: string;
   startTime: string;
   endTime: string;
   location: string;
   media_urls: string;
   description: string;
-  organizer_id: number;
 }
 
 const EventsWidget: React.FC = () => {
@@ -20,82 +19,81 @@ const EventsWidget: React.FC = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [expanded, setExpanded] = useState<number | null>(null);
 
-  const [formData, setFormData] = useState<Omit<EventItem, "id"> & { id?: number }>({
+  const [formData, setFormData] = useState<
+    Omit<EventItem, "id" | "categories"> & { id?: number; categories: string[] }
+  >({
     title: "",
-    category: "",
+    categories: [],
     date: "",
     startTime: "",
     endTime: "",
     location: "",
     media_urls: "",
     description: "",
-    organizer_id: 0,
   });
 
+  const [newCategory, setNewCategory] = useState("");
+
   // Fetch events
-  // Fetch events
-const fetchEvents = async () => {
-  try {
-    const res = await axios.get("http://localhost:5000/events");
+  const fetchEvents = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/events");
 
-    const mapped = res.data.map((ev: any) => {
-      const start = ev.start_time ? new Date(ev.start_time) : null;
-      const end = ev.end_time ? new Date(ev.end_time) : null;
+      const mapped = res.data.map((ev: any) => {
+        const start = ev.start_time ? new Date(ev.start_time) : null;
+        const end = ev.end_time ? new Date(ev.end_time) : null;
 
-      // Local date and time format (no UTC shift)
-      const formatDate = (d: Date | null) =>
-        d ? d.toLocaleDateString("en-CA") : ""; // YYYY-MM-DD
-      const formatTime = (d: Date | null) =>
-        d
-          ? d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
-          : "";
+        const formatDate = (d: Date | null) =>
+          d ? d.toLocaleDateString("en-CA") : "";
+        const formatTime = (d: Date | null) =>
+          d
+            ? d.toLocaleTimeString("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "";
 
-      // --- Media URLs cleaning ---
-      const cleanMediaUrls = (() => {
-        if (!ev.media_urls) return "";
+        const cleanMediaUrls = (() => {
+          if (!ev.media_urls) return "";
 
-        let raw = ev.media_urls;
-
-        // If wrapped in { ... }, strip them
-        if (raw.startsWith("{") && raw.endsWith("}")) {
-          raw = raw.slice(1, -1);
-        }
-
-        try {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            return parsed.join(", ");
+          let raw = ev.media_urls;
+          if (raw.startsWith("{") && raw.endsWith("}")) {
+            raw = raw.slice(1, -1);
           }
-          if (typeof parsed === "string") {
-            return parsed;
+
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              return parsed.join(", ");
+            }
+            if (typeof parsed === "string") {
+              return parsed;
+            }
+          } catch {
+            // fallback
           }
-        } catch {
-          // not valid JSON, fallback
-        }
 
-        return raw;
-      })();
+          return raw;
+        })();
 
-      return {
-        id: ev.event_id,
-        title: ev.event_name,
-        category: ev.event_category || "",
-        date: formatDate(start),
-        startTime: formatTime(start),
-        endTime: formatTime(end),
-        location: ev.location || "",
-        media_urls: cleanMediaUrls,
-        description: ev.description || "",
-        organizer_id: ev.organizer_id ?? 0,
-      };
-    });
+        return {
+          id: ev.event_id,
+          title: ev.event_name,
+          categories: ev.event_categories || [],
+          date: formatDate(start),
+          startTime: formatTime(start),
+          endTime: formatTime(end),
+          location: ev.location || "",
+          media_urls: cleanMediaUrls,
+          description: ev.description || "",
+        };
+      });
 
-    setEvents(mapped);
-  } catch (err) {
-    console.error("Error fetching events:", err);
-  }
-};
-
+      setEvents(mapped);
+    } catch (err) {
+      console.error("Error fetching events:", err);
+    }
+  };
 
   useEffect(() => {
     fetchEvents();
@@ -119,18 +117,15 @@ const fetchEvents = async () => {
 
     const payload = {
       event_name: formData.title,
-      event_category: formData.category,
+      event_categories: formData.categories,
       start_time: startISO,
       end_time: endISO,
       location: formData.location,
       description: formData.description,
       media_urls: mediaArray,
-      organizer_id: formData.organizer_id,
     };
 
     try {
-      console.log("Payload being sent:", payload);
-
       if (formData.id) {
         await axios.put(`http://localhost:5000/events/${formData.id}`, payload);
         alert("Event updated successfully!");
@@ -142,7 +137,10 @@ const fetchEvents = async () => {
     } catch (err: any) {
       console.error("Error saving event:", err);
       if (err.response) {
-        alert("Update failed: " + (err.response.data.message || JSON.stringify(err.response.data)));
+        alert(
+          "Update failed: " +
+            (err.response.data.message || JSON.stringify(err.response.data))
+        );
       } else {
         alert("Update failed: check console for details.");
       }
@@ -150,15 +148,15 @@ const fetchEvents = async () => {
 
     setFormData({
       title: "",
-      category: "",
+      categories: [],
       date: "",
       startTime: "",
       endTime: "",
       location: "",
       media_urls: "",
       description: "",
-      organizer_id: 0,
     });
+    setNewCategory("");
     setShowForm(false);
   };
 
@@ -166,15 +164,15 @@ const fetchEvents = async () => {
     setFormData({
       id: event.id,
       title: event.title,
-      category: event.category,
+      categories: [...event.categories],
       date: event.date,
       startTime: event.startTime,
       endTime: event.endTime,
       location: event.location,
       media_urls: event.media_urls,
       description: event.description,
-      organizer_id: event.organizer_id,
     });
+    setNewCategory("");
     setShowForm(true);
   };
 
@@ -187,6 +185,23 @@ const fetchEvents = async () => {
     }
   };
 
+  const addCategory = () => {
+    if (newCategory.trim()) {
+      setFormData({
+        ...formData,
+        categories: [...formData.categories, newCategory.trim()],
+      });
+      setNewCategory("");
+    }
+  };
+
+  const removeCategory = (cat: string) => {
+    setFormData({
+      ...formData,
+      categories: formData.categories.filter((c) => c !== cat),
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -194,15 +209,15 @@ const fetchEvents = async () => {
           onClick={() => {
             setFormData({
               title: "",
-              category: "",
+              categories: [],
               date: "",
               startTime: "",
               endTime: "",
               location: "",
               media_urls: "",
               description: "",
-              organizer_id: 0,
             });
+            setNewCategory("");
             setShowForm(true);
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -223,61 +238,98 @@ const fetchEvents = async () => {
                 type="text"
                 placeholder="Title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 className="w-full border rounded p-2"
                 required
               />
-              <input
-                type="text"
-                placeholder="Category"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full border rounded p-2"
-              />
+
+              {/* Categories */}
+              <div>
+                <label className="block font-medium mb-1">Categories</label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Add a category"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    className="flex-1 border rounded p-2"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCategory}
+                    className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formData.categories.map((cat, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-1 bg-gray-200 rounded flex items-center gap-1"
+                    >
+                      {cat}
+                      <button
+                        type="button"
+                        onClick={() => removeCategory(cat)}
+                        className="text-red-600"
+                      >
+                        <X size={14} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               <input
                 type="date"
                 value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
                 className="w-full border rounded p-2"
               />
               <input
                 type="time"
                 value={formData.startTime}
-                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, startTime: e.target.value })
+                }
                 className="w-full border rounded p-2"
               />
               <input
                 type="time"
                 value={formData.endTime}
-                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, endTime: e.target.value })
+                }
                 className="w-full border rounded p-2"
               />
               <input
                 type="text"
                 placeholder="Location"
                 value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, location: e.target.value })
+                }
                 className="w-full border rounded p-2"
               />
               <input
                 type="text"
                 placeholder="Media URLs (comma-separated)"
                 value={formData.media_urls}
-                onChange={(e) => setFormData({ ...formData, media_urls: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, media_urls: e.target.value })
+                }
                 className="w-full border rounded p-2"
               />
               <textarea
                 placeholder="Description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full border rounded p-2"
-              />
-              <input
-                type="number"
-                placeholder="Organizer ID"
-                value={formData.organizer_id}
                 onChange={(e) =>
-                  setFormData({ ...formData, organizer_id: parseInt(e.target.value) || 0 })
+                  setFormData({ ...formData, description: e.target.value })
                 }
                 className="w-full border rounded p-2"
               />
@@ -310,18 +362,34 @@ const fetchEvents = async () => {
               onClick={() => setExpanded(expanded === ev.id ? null : ev.id)}
               className="w-full flex justify-between items-center px-4 py-3 text-left font-medium hover:bg-gray-50"
             >
-              {ev.title} (ID: {ev.id}){" "}
-              <span className="text-gray-500 text-sm">Organizer: {ev.organizer_id}</span>
+              {ev.title} (ID: {ev.id})
               {expanded === ev.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
             {expanded === ev.id && (
               <div className="px-4 pb-4 space-y-2">
-                <p><span className="font-semibold">Category:</span> {ev.category}</p>
-                <p><span className="font-semibold">Date:</span> {ev.date}</p>
-                <p><span className="font-semibold">Time:</span> {ev.startTime} - {ev.endTime}</p>
-                <p><span className="font-semibold">Location:</span> {ev.location}</p>
-                <p><span className="font-semibold">Media URLs:</span> {ev.media_urls}</p>
-                <p><span className="font-semibold">Description:</span> {ev.description}</p>
+                <p>
+                  <span className="font-semibold">Categories:</span>{" "}
+                  {ev.categories.join(", ")}
+                </p>
+                <p>
+                  <span className="font-semibold">Date:</span> {ev.date}
+                </p>
+                <p>
+                  <span className="font-semibold">Time:</span> {ev.startTime} -{" "}
+                  {ev.endTime}
+                </p>
+                <p>
+                  <span className="font-semibold">Location:</span>{" "}
+                  {ev.location}
+                </p>
+                <p>
+                  <span className="font-semibold">Media URLs:</span>{" "}
+                  {ev.media_urls}
+                </p>
+                <p>
+                  <span className="font-semibold">Description:</span>{" "}
+                  {ev.description}
+                </p>
                 <div className="flex gap-3 mt-2">
                   <button
                     onClick={() => handleEdit(ev)}
