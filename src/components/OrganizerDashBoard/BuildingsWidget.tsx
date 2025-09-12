@@ -15,7 +15,6 @@ const BuildingsWidget: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
-
   const [formData, setFormData] = useState<Building>({
     id: "",
     building_id: 0,
@@ -59,10 +58,21 @@ const BuildingsWidget: React.FC = () => {
     ],
   });
 
+  // Get token from localStorage
+  const token = localStorage.getItem("authToken");
+
+  // Configure Axios instance with Authorization header
+  const axiosInstance = axios.create({
+    baseURL: "http://localhost:5000", // Your backend API base URL
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   // Fetch all buildings on component mount
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/buildings")  // Fetch building data
+    axiosInstance
+      .get("/buildings")  // Fetch building data
       .then((res) => {
         const formatted = res.data.map((b: any) => ({
           ...b,
@@ -71,24 +81,29 @@ const BuildingsWidget: React.FC = () => {
         }));
         setBuildings(formatted);
       })
-      .catch((err) => console.error("Error fetching buildings:", err));
+      .catch((err) => {
+        console.error("Error fetching buildings:", err);
+        if (err.response?.status === 401) {
+          // Redirect to login if unauthorized
+          window.location.href = "/login";
+        }
+      });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation
-    if (!formData.building_name) return;
-    if (formData.building_id < 0 || formData.zone_id < 0) {
-      alert("IDs cannot be negative");
+    if (!formData.building_name || formData.zone_id < 1 || formData.building_id < 1) {
+      alert("Please fill in all required fields.");
       return;
     }
 
     try {
       if (formData.id) {
         // Update existing building
-        await axios.put(
-          `http://localhost:5000/buildings/${formData.building_id}`,
+        const res = await axiosInstance.put(
+          `/buildings/${formData.building_id}`,
           {
             zone_id: formData.zone_id,
             building_name: formData.building_name,
@@ -98,11 +113,11 @@ const BuildingsWidget: React.FC = () => {
         );
         // Update the buildings list in the UI
         setBuildings((prev) =>
-          prev.map((b) => (b.id === formData.id ? formData : b))
+          prev.map((b) => (b.id === formData.id ? { ...b, ...formData } : b))
         );
       } else {
         // Create new building
-        const res = await axios.post("http://localhost:5000/buildings", {
+        const res = await axiosInstance.post("/buildings", {
           zone_id: formData.zone_id,
           building_name: formData.building_name,
           description: formData.description,
@@ -144,7 +159,7 @@ const BuildingsWidget: React.FC = () => {
     if (!building) return;
 
     try {
-      await axios.delete(`http://localhost:5000/buildings/${building.building_id}`);
+      await axiosInstance.delete(`/buildings/${building.building_id}`);
       // Remove deleted building from state
       setBuildings((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
@@ -169,7 +184,7 @@ const BuildingsWidget: React.FC = () => {
         ...prev,
         exhibits: [...prev.exhibits, value], // Add new exhibit
       }));
-      e.target.value = ''; // Clear the input field
+      e.target.value = ""; // Clear the input field
     }
   };
 
@@ -223,20 +238,18 @@ const BuildingsWidget: React.FC = () => {
                       ...formData,
                       building_name: e.target.value,
                       building_id: zoneBuildings[String(formData.zone_id)]
-                        .find(b => b.name === e.target.value)?.id || 0, // Set building_id from the selected name
+                        .find((b) => b.name === e.target.value)?.id || 0, // Set building_id from the selected name
                     })
                   }
                   className="w-full border p-2 rounded"
                   disabled={!formData.zone_id} // Disable until zone is selected
                 >
                   <option value="">Select Building</option>
-                  {(zoneBuildings[String(formData.zone_id)] || []).map(
-                    (building) => (
-                      <option key={building.id} value={building.name}>
-                        {building.name} (ID: {building.id})
-                      </option>
-                    )
-                  )}
+                  {(zoneBuildings[String(formData.zone_id)] || []).map((building) => (
+                    <option key={building.id} value={building.name}>
+                      {building.name} (ID: {building.id})
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -245,9 +258,7 @@ const BuildingsWidget: React.FC = () => {
                 <textarea
                   value={formData.description}
                   className="w-full border p-2 rounded"
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 ></textarea>
               </div>
 
@@ -276,17 +287,10 @@ const BuildingsWidget: React.FC = () => {
               </div>
 
               <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2 bg-gray-200 rounded"
-                >
+                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 bg-gray-200 rounded">
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
-                >
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
                   Save
                 </button>
               </div>
@@ -304,27 +308,21 @@ const BuildingsWidget: React.FC = () => {
               className="w-full flex justify-between items-center px-4 py-3 text-left font-medium hover:bg-gray-50"
             >
               {b.building_name}
-              {expanded === b.id ? (
-                <ChevronUp size={18} />
-              ) : (
-                <ChevronDown size={18} />
-              )}
+              {expanded === b.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
             {expanded === b.id && (
               <div className="px-4 pb-4 space-y-2">
                 <p>
-                  <span className="font-semibold">Building ID:</span>{" "}
-                  {b.building_id}
+                  <span className="font-semibold">Building ID:</span> {b.building_id}
                 </p>
                 <p>
                   <span className="font-semibold">Zone ID:</span> {b.zone_id}
                 </p>
                 <p>
-                  <span className="font-semibold">Description:</span>{" "}
-                  {b.description}
+                  <span className="font-semibold">Description:</span> {b.description}
                 </p>
                 <p>
-                  <span className="font-semibold">Exhibits:</span>{" "}
+                  <span className="font-semibold">Exhibits:</span>
                   {b.exhibits.length > 0 ? (
                     <ul>
                       {b.exhibits.map((exhibit, index) => (
@@ -337,10 +335,7 @@ const BuildingsWidget: React.FC = () => {
                 </p>
 
                 <div className="flex gap-3 mt-2">
-                  <button
-                    onClick={() => handleEdit(b)}
-                    className="px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                  >
+                  <button onClick={() => handleEdit(b)} className="px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600">
                     <Edit size={14} className="inline-block mr-1" /> Edit
                   </button>
                   <button

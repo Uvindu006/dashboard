@@ -29,15 +29,26 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, goToLogi
       return;
     }
 
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValidEmail) {
+      setErrorMessage("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    const userData = {
+      fname,
+      lname,
+      email,
+      contact_no: contactNo,
+      password,
+    };
+
+    console.log("Sending registration data:", userData); // Log the data being sent
+
     try {
       // Send registration request to backend
-      const response = await axios.post("http://localhost:5000/auths/register", {
-        fname,
-        lname,
-        email,
-        contact_no: contactNo,
-        password,
-      });
+      const response = await axios.post("http://localhost:5000/auths/register", userData);
 
       if (response.status === 201) {
         // On success, call onRegister to navigate to login page
@@ -45,15 +56,19 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, goToLogi
       }
     } catch (err) {
       setLoading(false); // Reset loading state
-      if (err.response?.status === 400) {
-        // Handle error when fields are missing or email is already registered
-        setErrorMessage(err.response.data.message || "Registration failed. Try again.");
-      } else if (err.response?.status === 500) {
-        // Handle server error
-        setErrorMessage("Internal server error. Please try again later.");
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 400) {
+          setErrorMessage(err.response.data.message || "Registration failed. Try again.");
+        } else if (err.response.status === 500) {
+          // Handle server error
+          setErrorMessage("Internal server error. Please try again later.");
+        } else {
+          // Generic error message
+          setErrorMessage("Registration failed. Please try again.");
+        }
       } else {
-        // Generic error message
-        setErrorMessage("Registration failed. Please try again.");
+        // Network or unexpected error
+        setErrorMessage("An unexpected error occurred. Please check your network and try again.");
       }
     }
   };
