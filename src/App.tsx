@@ -1,39 +1,54 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // useNavigate for navigation
-import "./LoginPage.css";
-import LoginPage from "./LoginPage";
-import RegisterPage from "./RegisterPage";
-import OrganizerDashBoard from "./OrganizerDashBoard";
+import axios from "axios"; // Import axios for HTTP requests
+import { useNavigate } from "react-router-dom"; // useNavigate for routing
+import "./LoginPage.css"; // Ensure your CSS is correct
 
 interface LoginPageProps {
-  onLogin: () => void; // Prop to notify parent component about successful login
-  goToRegister: () => void; // Prop to navigate to the register page
+  onLogin: () => void;  // This will be called when the user logs in successfully
+  goToRegister: () => void;  // This will be used for navigation to the Register page
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) => {
-  const [email, setEmail] = useState(""); // Email state
-  const [password, setPassword] = useState(""); // Password state
-  const [loading, setLoading] = useState(false); // Loading state for the button
+  const [email, setEmail] = useState("");  // Email state
+  const [password, setPassword] = useState("");  // Password state
+  const [loading, setLoading] = useState(false);  // Loading state for the button
+  const [errorMessage, setErrorMessage] = useState("");  // Error message state
 
   const navigate = useNavigate(); // useNavigate hook for navigation
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Login button clicked"); // Debug: check if button is clicked
-    setLoading(true); // Set loading to true while navigating
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();  // Prevent form submission from reloading the page
+    setLoading(true);  // Show loading state when trying to log in
+    setErrorMessage("");  // Clear previous error messages
 
-    // Instead of validating, just navigate directly to the dashboard
-    console.log("Setting dummy data in localStorage"); // Debug: check localStorage setting
-    localStorage.setItem("authToken", "dummy-token"); // Set a dummy token for now
-    localStorage.setItem("authUser", JSON.stringify({ email })); // Store email as the auth user
+    // Make POST request to login endpoint
+    try {
+      const response = await axios.post("http://localhost:5000/auths/login", {
+        email,
+        password,
+      });
 
-    // Trigger the onLogin function to notify the parent component
-    console.log("Triggering onLogin function"); // Debug: check if onLogin is triggered
-    onLogin(); // Notify parent that login is successful
+      if (response.status === 200) {
+        // On successful login, store the JWT token in localStorage
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("authUser", JSON.stringify({ email }));
 
-    // After login, route to the dashboard
-    console.log("Navigating to dashboard"); // Debug: check navigation
-    navigate("/dashboard"); // Navigate to the dashboard route
+        // Notify the parent component that login was successful
+        onLogin();
+
+        // After login, navigate to the overview page
+        navigate("/Eng_ex2025/overview");  // Correct route to overview page
+      }
+    } catch (err) {
+      setLoading(false);  // Reset loading state after response
+      if (err.response?.status === 400) {
+        setErrorMessage("Email and Password are required.");
+      } else if (err.response?.status === 401) {
+        setErrorMessage("Invalid email or password.");
+      } else {
+        setErrorMessage("An error occurred, please try again later.");
+      }
+    }
   };
 
   return (
@@ -42,7 +57,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) =
         <h2 className="login-title">Login</h2>
         <p className="login-subtitle">Welcome back! Please login to continue.</p>
 
-        {/* The login form */}
+        {/* Display error message if any */}
+        {errorMessage && <div className="error-message">{errorMessage}</div>}
+
+        {/* Login Form */}
         <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
             <label className="form-label">Email</label>
