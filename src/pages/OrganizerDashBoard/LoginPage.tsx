@@ -36,8 +36,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) =
         // Notify the parent component that login was successful
         onLogin();
 
-        // After login, navigate to the correct overview page
-        navigate("/Eng_ex2025/overview");  // Correct route to overview page
+        // After login, navigate to the overview page
+        navigate("/overview");  // Navigate to overview page
       }
     } catch (err) {
       setLoading(false);  // Reset loading state after response

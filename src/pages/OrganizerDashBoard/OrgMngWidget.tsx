@@ -23,26 +23,43 @@ const OrgMngWidget: React.FC = () => {
     try {
       const response = await fetch('http://localhost:5000/organizers');
       const data = await response.json();
+      console.log('Fetched organizers data:', data); // Debug log
       setOrganizers(data);
     } catch (error) {
+      console.error('Fetch organizers error:', error);
       setError('Failed to load organizers. Please try again later.');
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number | string | undefined) => {
+    // Validate that we have a valid ID
+    if (!id || id === 'undefined' || id === 'null') {
+      alert('Invalid organizer ID. Cannot delete this organizer.');
+      return;
+    }
+
+    // Convert to number if it's a string
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    
+    if (isNaN(numericId) || numericId <= 0) {
+      alert('Invalid organizer ID. Cannot delete this organizer.');
+      return;
+    }
+
     if (window.confirm('Are you sure you want to delete this organizer?')) {
       try {
-        const response = await fetch(`http://localhost:5000/organizers/${id}`, {
+        const response = await fetch(`http://localhost:5000/organizers/${numericId}`, {
           method: 'DELETE',
         });
         const result = await response.json();
         if (response.ok) {
           alert(result.message);
-          setOrganizers(organizers.filter((org) => org.organizer_ID !== id));
+          setOrganizers(organizers.filter((org) => org.organizer_ID !== numericId));
         } else {
           alert(result.message || 'Failed to delete organizer. Please try again.');
         }
       } catch (error) {
+        console.error('Delete error:', error);
         alert('Failed to delete organizer. Please try again.');
       }
     }
@@ -66,13 +83,19 @@ const OrgMngWidget: React.FC = () => {
 
   // Edit logic
   const handleEditClick = async (organizer: any) => {
+    const id = organizer.organizer_ID || organizer.id || organizer.organizerId || organizer.organizer_id;
+    if (!id) {
+      alert('Invalid organizer ID. Cannot edit this organizer.');
+      return;
+    }
+    
     try {
-      const response = await fetch(`http://localhost:5000/organizers/${organizer.organizer_ID}`);
+      const response = await fetch(`http://localhost:5000/organizers/${id}`);
       const data = await response.json();
       setEditingOrganizer(data);
       setEditForm({
-        fname: data.fname || '',
-        lname: data.lname || '',
+        fname: data.fname || data.Fname || '',
+        lname: data.lname || data.Lname || '',
         email: data.email || '',
         contact_no: data.contact_no || '',
         password: '',
@@ -89,20 +112,37 @@ const OrgMngWidget: React.FC = () => {
   const handleEditFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingOrganizer) return;
+    
+    const id = editingOrganizer.organizer_ID || editingOrganizer.id || editingOrganizer.organizerId || editingOrganizer.organizer_id;
+    if (!id) {
+      alert('Invalid organizer ID. Cannot update this organizer.');
+      return;
+    }
+    
     try {
-      const response = await fetch(`http://localhost:5000/organizers/${editingOrganizer.organizer_ID}`, {
+      // Map frontend field names to backend field names
+      const updateData = {
+        Fname: editForm.fname,
+        Lname: editForm.lname,
+        email: editForm.email,
+        contact_no: editForm.contact_no,
+        password: editForm.password,
+      };
+      
+      const response = await fetch(`http://localhost:5000/organizers/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(updateData),
       });
       const result = await response.json();
       alert(result.message || 'Organizer updated!');
       setOrganizers((prev) =>
-        prev.map((org) =>
-          org.organizer_ID === editingOrganizer.organizer_ID
+        prev.map((org) => {
+          const orgId = org.organizer_ID || org.id || org.organizerId || org.organizer_id;
+          return orgId === id
             ? { ...org, ...editForm, organizer_name: `${editForm.fname} ${editForm.lname}` }
-            : org
-        )
+            : org;
+        })
       );
       setEditingOrganizer(null);
     } catch (error) {
@@ -234,9 +274,11 @@ const OrgMngWidget: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {organizers.map((org, idx) => (
-              <tr key={String(org.organizer_ID ?? idx)}>
-                <td>{org.organizer_ID ?? '-'}</td>
+            {organizers.map((org, idx) => {
+              const id = org.organizer_ID || org.id || org.organizerId || org.organizer_id;
+              return (
+              <tr key={String(id ?? idx)}>
+                <td>{id ?? '-'}</td>
                 <td>{org.organizer_name ?? '-'}</td>
                 <td>{org.fname ?? '-'}</td>
                 <td>{org.lname ?? '-'}</td>
@@ -250,14 +292,22 @@ const OrgMngWidget: React.FC = () => {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(org.organizer_ID)}
+                    onClick={() => {
+                      console.log('Delete button clicked for organizer:', org);
+                      console.log('Organizer ID:', org.organizer_ID);
+                      // Try different possible field names for the ID
+                      const id = org.organizer_ID || org.id || org.organizerId || org.organizer_id;
+                      console.log('Using ID:', id);
+                      handleDelete(id);
+                    }}
                     className="text-red-600 hover:underline ml-4"
                   >
                     Delete
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

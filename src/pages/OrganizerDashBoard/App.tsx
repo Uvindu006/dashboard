@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import OrganizerDashBoard from "./OrganizerDashBoard";
 import LoginPage from "./LoginPage";
 import RegisterPage from "./RegisterPage";
