@@ -36,8 +36,12 @@ const OrgMngWidget: React.FC = () => {
           method: 'DELETE',
         });
         const result = await response.json();
-        alert(result.message);
-        setOrganizers(organizers.filter((org) => org.organizer_ID !== id));
+        if (response.ok) {
+          alert(result.message);
+          setOrganizers(organizers.filter((org) => org.organizer_ID !== id));
+        } else {
+          alert(result.message || 'Failed to delete organizer. Please try again.');
+        }
       } catch (error) {
         alert('Failed to delete organizer. Please try again.');
       }
