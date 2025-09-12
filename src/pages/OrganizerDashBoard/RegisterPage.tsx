@@ -1,41 +1,60 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "./LoginPage.css";
+import "./LoginPage.css"; // Make sure to import your CSS file correctly
 
 interface RegisterPageProps {
-  onRegister: () => void;
-  goToLogin: () => void;
+  onRegister: () => void; // Callback to handle successful registration
+  goToLogin: () => void; // Callback to navigate to login page
 }
 
 export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, goToLogin }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [fname, setFname] = useState(""); // First name state
+  const [lname, setLname] = useState(""); // Last name state
+  const [email, setEmail] = useState(""); // Email state
+  const [contactNo, setContactNo] = useState(""); // Contact number state
+  const [password, setPassword] = useState(""); // Password state
+  const [errorMessage, setErrorMessage] = useState(""); // Error message state
+  const [loading, setLoading] = useState(false); // Loading state for form submission
 
+  // Handle registration submission
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage("");
-    setLoading(true);
+    e.preventDefault(); // Prevent default form submission
+    setErrorMessage(""); // Clear previous error messages
+    setLoading(true); // Set loading state
 
-    if (!email || !password) {
-      setErrorMessage("Please enter both email and password.");
+    // Validate the form fields
+    if (!fname || !lname || !email || !contactNo || !password) {
+      setErrorMessage("Fname, Lname, Email, Contact No, and Password are required.");
       setLoading(false);
       return;
     }
 
     try {
+      // Send registration request to backend
       const response = await axios.post("http://localhost:5000/auths/register", {
+        fname,
+        lname,
         email,
+        contact_no: contactNo,
         password,
       });
 
       if (response.status === 201) {
+        // On success, call onRegister to navigate to login page
         onRegister();
       }
     } catch (err) {
-      setLoading(false);
-      setErrorMessage("Registration failed. Try again.");
+      setLoading(false); // Reset loading state
+      if (err.response?.status === 400) {
+        // Handle error when fields are missing or email is already registered
+        setErrorMessage(err.response.data.message || "Registration failed. Try again.");
+      } else if (err.response?.status === 500) {
+        // Handle server error
+        setErrorMessage("Internal server error. Please try again later.");
+      } else {
+        // Generic error message
+        setErrorMessage("Registration failed. Please try again.");
+      }
     }
   };
 
@@ -43,9 +62,37 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, goToLogi
     <div className="login-container">
       <div className="login-card">
         <h2 className="login-title">Register</h2>
-        <p className="login-subtitle">Create your account.</p>
+        <p className="login-subtitle">Create your account to get started.</p>
+
+        {/* Display error message if any */}
         {errorMessage && <div className="error-message">{errorMessage}</div>}
+
+        {/* Registration form */}
         <form onSubmit={handleRegister} className="login-form">
+          <div className="form-group">
+            <label className="form-label">First Name</label>
+            <input
+              type="text"
+              value={fname}
+              onChange={(e) => setFname(e.target.value)}
+              className="form-input"
+              placeholder="Enter your first name"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Last Name</label>
+            <input
+              type="text"
+              value={lname}
+              onChange={(e) => setLname(e.target.value)}
+              className="form-input"
+              placeholder="Enter your last name"
+              required
+            />
+          </div>
+
           <div className="form-group">
             <label className="form-label">Email</label>
             <input
@@ -57,6 +104,19 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, goToLogi
               required
             />
           </div>
+
+          <div className="form-group">
+            <label className="form-label">Contact Number</label>
+            <input
+              type="text"
+              value={contactNo}
+              onChange={(e) => setContactNo(e.target.value)}
+              className="form-input"
+              placeholder="Enter your contact number"
+              required
+            />
+          </div>
+
           <div className="form-group">
             <label className="form-label">Password</label>
             <input
@@ -68,6 +128,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, goToLogi
               required
             />
           </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
             className={`login-button ${loading ? "loading" : ""}`}
@@ -76,6 +138,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, goToLogi
             {loading ? "Registering..." : "Register"}
           </button>
         </form>
+
+        {/* Login Button */}
         <button className="switch-button" onClick={goToLogin}>
           Already have an account? Login
         </button>

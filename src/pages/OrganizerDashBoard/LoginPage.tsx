@@ -1,77 +1,80 @@
 import React, { useState } from "react";
-import "./LoginPage.css";
+import "./RegisterPage.css";
 
 interface LoginPageProps {
   onLogin: () => void;
-  goToRegister: () => void; // Added goToRegister prop
+  goToRegister: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) => {
-  const [email, setEmail] = useState(""); // Email state
-  const [password, setPassword] = useState(""); // Password state
-  const [loading, setLoading] = useState(false); // Loading state for the button
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true while navigating
+    setLoading(true);
+    setErrorMsg("");
 
-    // Instead of validating, just navigate directly to the dashboard
-    localStorage.setItem("authToken", "dummy-token"); // Set a dummy token for now
-    localStorage.setItem("authUser", JSON.stringify({ email })); // Store email as the auth user
+    if (!email || !password) {
+      setErrorMsg("Please enter both email and password.");
+      setLoading(false);
+      return;
+    }
 
-    // Trigger the onLogin function to notify the parent component
-    onLogin(); // Notify parent that login is successful
-
-    // After login, route to the dashboard
-    // Here, we assume onLogin() will handle the navigation logic
+    // Dummy login logic
+    localStorage.setItem("authToken", "dummy-token");
+    localStorage.setItem("authUser", JSON.stringify({ email }));
+    setTimeout(() => {
+      onLogin();
+      setLoading(false);
+    }, 500);
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h2 className="login-title">Login</h2>
-        <p className="login-subtitle">Welcome back! Please login to continue.</p>
-        
-        {/* The login form */}
-        <form onSubmit={handleLogin} className="login-form">
+    <div className="register-container">
+      <div className="register-card">
+        <h2 className="register-title">Sign In</h2>
+        <p className="register-subtitle">Welcome back! Please login to your account.</p>
+        {errorMsg && <div className="error-message">{errorMsg}</div>}
+        <form onSubmit={handleLogin}>
           <div className="form-group">
             <label className="form-label">Email</label>
             <input
               type="email"
+              className="form-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="form-input"
               placeholder="Enter your email"
+              autoComplete="username"
               required
             />
           </div>
-
           <div className="form-group">
             <label className="form-label">Password</label>
             <input
               type="password"
+              className="form-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="form-input"
               placeholder="Enter your password"
+              autoComplete="current-password"
               required
             />
           </div>
-
           <button
             type="submit"
-            className={`login-button ${loading ? "loading" : ""}`}
+            className="register-button"
             disabled={loading}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        {/* Register Button */}
-        <div className="register-section">
-          <p>Don't have an account?</p>
+        <div className="login-section">
+          <p style={{ margin: "16px 0 8px 0" }}>Don't have an account?</p>
           <button
-            className="register-button"
+            className="login-button"
             onClick={goToRegister}
             type="button"
           >

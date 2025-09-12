@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import OrganizerDashBoard from "./OrganizerDashBoard";
 import LoginPage from "./LoginPage";
+import RegisterPage from "./RegisterPage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -22,12 +24,27 @@ function App() {
     setIsAuthenticated(false);
   };
 
+  const handleGoToRegister = () => {
+    setShowRegister(true);
+  };
+
+  const handleGoToLogin = () => {
+    setShowRegister(false);
+  };
+
+  const handleRegister = () => {
+    // After successful registration, go to login page
+    setShowRegister(false);
+  };
+
   return (
     <>
       {isAuthenticated ? (
         <OrganizerDashBoard onLogout={handleLogout} />
+      ) : showRegister ? (
+        <RegisterPage onRegister={handleRegister} goToLogin={handleGoToLogin} />
       ) : (
-        <LoginPage onLogin={handleLogin} />
+        <LoginPage onLogin={handleLogin} goToRegister={handleGoToRegister} />
       )}
     </>
   );
