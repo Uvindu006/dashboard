@@ -3,11 +3,12 @@ import axios from "axios";
 import { Plus, ChevronDown, ChevronUp, Edit, Trash } from "lucide-react";
 
 interface Building {
-  id: string; // Local ID for frontend state
+  id: string;
   building_id: number;
   zone_id: number;
   building_name: string;
   description: string;
+  exhibits: string[]; // Exhibits as an array of strings
 }
 
 const BuildingsWidget: React.FC = () => {
@@ -21,6 +22,41 @@ const BuildingsWidget: React.FC = () => {
     zone_id: 0,
     building_name: "",
     description: "",
+    exhibits: [], // Initialize exhibits as an empty array
+  });
+
+  // Define buildings for each zone as string keys (matching zone_id)
+  const [zoneBuildings, setZoneBuildings] = useState<{ [key: string]: { name: string, id: number }[] }>({
+    "1": [  // Zone A
+      { name: "Drawing Office 2", id: 22 },
+      { name: "Department of Manufacturing and Industrial Engineering", id: 28 },
+      { name: "Corridor", id: 23 },
+    ],
+    "2": [  // Zone B
+      { name: "Drawing Office 1", id: 3 },
+      { name: "Professor E.O.E. Pereira Theatre", id: 4 },
+      { name: "Administrative Building", id: 5 },
+      { name: "Security Unit", id: 6 },
+      { name: "Department of Chemical and Process Engineering", id: 1 },
+      { name: "Department Engineering Mathematics", id: 2 },
+    ],
+    "3": [  // Zone C
+      { name: "Department of Electrical and Electronic Engineering", id: 8 },
+      { name: "Department of Computer Engineering", id: 9 },
+      { name: "Electrical and Electronic Workshop", id: 10 },
+      { name: "Surveying Lab", id: 11 },
+      { name: "Soil Lab", id: 12 },
+      { name: "Materials Lab", id: 13 },
+    ],
+    "4": [  // Zone D
+      { name: "Fluids Lab", id: 15 },
+      { name: "New Mechanics Lab", id: 16 },
+      { name: "Applied Mechanics Lab", id: 17 },
+      { name: "Thermodynamics Lab", id: 18 },
+      { name: "Generator Room", id: 19 },
+      { name: "Engineering Workshop", id: 20 },
+      { name: "Engineering Carpentry Shop", id: 21 },
+    ],
   });
 
   // Fetch all buildings on component mount
@@ -31,6 +67,7 @@ const BuildingsWidget: React.FC = () => {
         const formatted = res.data.map((b: any) => ({
           ...b,
           id: b.building_id.toString(), // Use building_id as unique id
+          exhibits: b.exhibits || [], // Ensure exhibits is always an array
         }));
         setBuildings(formatted);
       })
@@ -56,6 +93,7 @@ const BuildingsWidget: React.FC = () => {
             zone_id: formData.zone_id,
             building_name: formData.building_name,
             description: formData.description,
+            exhibits: formData.exhibits, // Include exhibits in the update
           }
         );
         // Update the buildings list in the UI
@@ -68,6 +106,7 @@ const BuildingsWidget: React.FC = () => {
           zone_id: formData.zone_id,
           building_name: formData.building_name,
           description: formData.description,
+          exhibits: formData.exhibits, // Send exhibits when creating a new building
         });
 
         if (res.status === 200) {
@@ -90,6 +129,7 @@ const BuildingsWidget: React.FC = () => {
       zone_id: 0,
       building_name: "",
       description: "",
+      exhibits: [], // Reset exhibits
     });
     setShowForm(false);
   };
@@ -112,6 +152,34 @@ const BuildingsWidget: React.FC = () => {
     }
   };
 
+  // Handle zone change and update the available building names
+  const handleZoneChange = (zoneId: number) => {
+    setFormData({
+      ...formData,
+      zone_id: zoneId,
+      building_name: "", // Reset building name when zone changes
+    });
+  };
+
+  // Handle changes in exhibits
+  const handleExhibitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    if (value) {
+      setFormData((prev) => ({
+        ...prev,
+        exhibits: [...prev.exhibits, value], // Add new exhibit
+      }));
+      e.target.value = ''; // Clear the input field
+    }
+  };
+
+  const removeExhibit = (exhibit: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      exhibits: prev.exhibits.filter((e) => e !== exhibit), // Remove exhibit
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -132,48 +200,44 @@ const BuildingsWidget: React.FC = () => {
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block font-medium mb-1">Building ID</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.building_id}
-                  className="w-full border p-2 rounded"
-                  disabled={!!formData.id} // Disable when editing
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      building_id: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
-
-              <div>
                 <label className="block font-medium mb-1">Zone ID</label>
-                <input
-                  type="number"
-                  min="0"
+                <select
                   value={formData.zone_id}
+                  onChange={(e) => handleZoneChange(Number(e.target.value))}
                   className="w-full border p-2 rounded"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      zone_id: Number(e.target.value),
-                    })
-                  }
-                />
+                >
+                  <option value={0}>Select Zone</option>
+                  <option value={1}>A</option>
+                  <option value={2}>B</option>
+                  <option value={3}>C</option>
+                  <option value={4}>D</option>
+                </select>
               </div>
 
               <div>
                 <label className="block font-medium mb-1">Building Name</label>
-                <input
-                  type="text"
+                <select
                   value={formData.building_name}
-                  className="w-full border p-2 rounded"
                   onChange={(e) =>
-                    setFormData({ ...formData, building_name: e.target.value })
+                    setFormData({
+                      ...formData,
+                      building_name: e.target.value,
+                      building_id: zoneBuildings[String(formData.zone_id)]
+                        .find(b => b.name === e.target.value)?.id || 0, // Set building_id from the selected name
+                    })
                   }
-                />
+                  className="w-full border p-2 rounded"
+                  disabled={!formData.zone_id} // Disable until zone is selected
+                >
+                  <option value="">Select Building</option>
+                  {(zoneBuildings[String(formData.zone_id)] || []).map(
+                    (building) => (
+                      <option key={building.id} value={building.name}>
+                        {building.name} (ID: {building.id})
+                      </option>
+                    )
+                  )}
+                </select>
               </div>
 
               <div>
@@ -185,6 +249,30 @@ const BuildingsWidget: React.FC = () => {
                     setFormData({ ...formData, description: e.target.value })
                   }
                 ></textarea>
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">Exhibits</label>
+                <input
+                  type="text"
+                  placeholder="Add Exhibit"
+                  className="w-full border p-2 rounded"
+                  onBlur={handleExhibitChange}
+                />
+                <div>
+                  {formData.exhibits.map((exhibit, index) => (
+                    <div key={index} className="flex justify-between items-center">
+                      <span>{exhibit}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeExhibit(exhibit)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="flex justify-end gap-2">
@@ -234,6 +322,18 @@ const BuildingsWidget: React.FC = () => {
                 <p>
                   <span className="font-semibold">Description:</span>{" "}
                   {b.description}
+                </p>
+                <p>
+                  <span className="font-semibold">Exhibits:</span>{" "}
+                  {b.exhibits.length > 0 ? (
+                    <ul>
+                      {b.exhibits.map((exhibit, index) => (
+                        <li key={index}>{exhibit}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "No exhibits available"
+                  )}
                 </p>
 
                 <div className="flex gap-3 mt-2">
