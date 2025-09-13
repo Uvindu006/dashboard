@@ -234,28 +234,37 @@ const EventsWidget: React.FC = () => {
               {formData.id ? "Edit Event" : "Add Event"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input
-                type="text"
-                placeholder="Title"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                className="w-full border rounded p-2"
-                required
-              />
+              {/* Title */}
+              <div>
+                <label className="block font-medium mb-1">Title</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  className="w-full border rounded p-2"
+                  required
+                />
+              </div>
 
               {/* Categories */}
               <div>
                 <label className="block font-medium mb-1">Categories</label>
                 <div className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    placeholder="Add a category"
+                  <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     className="flex-1 border rounded p-2"
-                  />
+                  >
+                    <option value="">-- Select Category --</option>
+                    <option value="Music">Music</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Education">Education</option>
+                    <option value="Tech">Tech</option>
+                    <option value="Networking">Networking</option>
+                    <option value="Other">Other</option>
+                  </select>
                   <button
                     type="button"
                     onClick={addCategory}
@@ -283,57 +292,92 @@ const EventsWidget: React.FC = () => {
                 </div>
               </div>
 
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
-                className="w-full border rounded p-2"
-              />
-              <input
-                type="time"
-                value={formData.startTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, startTime: e.target.value })
-                }
-                className="w-full border rounded p-2"
-              />
-              <input
-                type="time"
-                value={formData.endTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, endTime: e.target.value })
-                }
-                className="w-full border rounded p-2"
-              />
-              <input
-                type="text"
-                placeholder="Location"
-                value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-                className="w-full border rounded p-2"
-              />
-              <input
-                type="text"
-                placeholder="Media URLs (comma-separated)"
-                value={formData.media_urls}
-                onChange={(e) =>
-                  setFormData({ ...formData, media_urls: e.target.value })
-                }
-                className="w-full border rounded p-2"
-              />
-              <textarea
-                placeholder="Description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className="w-full border rounded p-2"
-              />
+              {/* Date */}
+              <div>
+                <label className="block font-medium mb-1">Date</label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value })
+                  }
+                  className="w-full border rounded p-2"
+                />
+              </div>
 
+              {/* Start Time */}
+              <div>
+                <label className="block font-medium mb-1">Start Time</label>
+                <input
+                  type="time"
+                  value={formData.startTime}
+                  onChange={(e) =>
+                    setFormData({ ...formData, startTime: e.target.value })
+                  }
+                  className="w-full border rounded p-2"
+                />
+              </div>
+
+              {/* End Time */}
+              <div>
+                <label className="block font-medium mb-1">End Time</label>
+                <input
+                  type="time"
+                  value={formData.endTime}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endTime: e.target.value })
+                  }
+                  className="w-full border rounded p-2"
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block font-medium mb-1">Location</label>
+                <select
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
+                  }
+                  className="w-full border rounded p-2"
+                >
+                  <option value="">-- Select Location --</option>
+                  <option value="Drawing office 1">Drawing office 1</option>
+                  <option value="Computer Engineering Department">Computer Engineering Department</option>
+                  <option value="Electrical Department">Electrical Department</option>
+                  <option value="Strctures Lab">Strctures Lab</option>
+                  <option value="Common Room">Common Room</option>
+                </select>
+              </div>
+
+              {/* Media URLs */}
+              <div>
+                <label className="block font-medium mb-1">
+                  Media URLs (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  value={formData.media_urls}
+                  onChange={(e) =>
+                    setFormData({ ...formData, media_urls: e.target.value })
+                  }
+                  className="w-full border rounded p-2"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block font-medium mb-1">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  className="w-full border rounded p-2"
+                />
+              </div>
+
+              {/* Buttons */}
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
@@ -363,7 +407,11 @@ const EventsWidget: React.FC = () => {
               className="w-full flex justify-between items-center px-4 py-3 text-left font-medium hover:bg-gray-50"
             >
               {ev.title} (ID: {ev.id})
-              {expanded === ev.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              {expanded === ev.id ? (
+                <ChevronUp size={18} />
+              ) : (
+                <ChevronDown size={18} />
+              )}
             </button>
             {expanded === ev.id && (
               <div className="px-4 pb-4 space-y-2">
