@@ -1,12 +1,12 @@
 import { WebSocketServer, WebSocket } from 'ws';
-const wss = new WebSocketServer({ port: 3001 });
+const wss = new WebSocketServer({ port: 5008 });
 
 const MAX_HISTORY = 4;
 const chatHistory = [];
 let clientCounter = 0;
 const clientNames = new Map();
 
-console.log('WebSocket server started on ws://localhost:3001');
+console.log('WebSocket server started on ws://localhost:5008');
 
 wss.on('connection', function connection(ws) {
   clientCounter += 1;

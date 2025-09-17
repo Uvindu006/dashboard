@@ -69,6 +69,16 @@ const HeatmapWidget: React.FC = () => {
         { id: 21, name: "Engineering Carpentry Shop", peak: 80, dwell: 12, activity: "Low", color: "green", icon: Clock },
       ],
     },
+    dummy: {
+      name: "Event Venue",
+      buildings: [
+        { id: 101, name: "Main Hall", peak: 187, dwell: 28, activity: "High", color: "red", icon: Users },
+        { id: 102, name: "Exhibition Area", peak: 134, dwell: 22, activity: "Medium", color: "yellow", icon: Activity },
+        { id: 103, name: "Networking Lounge", peak: 89, dwell: 35, activity: "Low", color: "green", icon: Clock },
+        { id: 104, name: "Computer Engineering Dept", peak: 130, dwell: 20, activity: "Medium", color: "yellow", icon: Activity },
+        { id: 105, name: "Competition Area", peak: 90, dwell: 18, activity: "Low", color: "green", icon: Clock },
+      ],
+    },
   };
 
   const buildingsInZone = useMemo(
@@ -132,7 +142,7 @@ const HeatmapWidget: React.FC = () => {
         </select>
       </div>
 
-      {/* Chat Section */}
+      {/* Heatmap & Chat */}
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-8 shadow-xl hover:shadow-2xl transition-all duration-300">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
@@ -148,8 +158,31 @@ const HeatmapWidget: React.FC = () => {
             Live Data
           </div>
         </div>
-        <ChatClient socketUrl="ws://localhost:3001" />
+        <ChatClient socketUrl="ws://localhost:5008" />
       </div>
+
+      {/* Heatmap */}
+      {/*<div className="relative h-96 bg-gradient-to-br from-blue-50 via-yellow-50 to-red-50 rounded-2xl flex items-center justify-center border border-white/50 overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="w-full h-full"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.3) 1px, transparent 0)`,
+              backgroundSize: "20px 20px",
+            }}
+          ></div>
+        </div>
+        <div className="text-center relative z-10">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <MapPin size={32} className="text-blue-600" />
+          </div>
+          <p className="text-gray-500 mt-2">
+            Showing {allZones[zoneFilter].name} [
+            {buildingFilter === "all" ? "All Buildings" : buildingFilter}] [{timeFilter}]
+          </p>
+        </div>
+      </div>
+        */}
 
       {/* Analytics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
