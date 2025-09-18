@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { TrendingUp, Users, MapPin, Clock, BarChart3, Loader } from "lucide-react";  // Import Loader icon
+import { TrendingUp, Users, MapPin, Clock, BarChart3, Loader } from "lucide-react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 
@@ -14,11 +14,11 @@ interface Session {
 }
 
 const OverviewWidget: React.FC = () => {
-  const [timeRange, setTimeRange] = useState("10am-1pm"); // Human-readable time range
-  const [zone, setZone] = useState("zone1");
-  const [building, setBuilding] = useState<string>("13"); // Default building ID (Drawing Office 2)
-  const [date, setDate] = useState<string>("2025-09-17"); // Set date to 2025-09-17 for testing
-  const [slot, setSlot] = useState<number>(1); // Default slot (1 for 10am-1pm)
+  const [timeRange, setTimeRange] = useState("10am-1pm");
+  const [zone, setZone] = useState("1");
+  const [building, setBuilding] = useState<string>("B13"); // Default: Drawing Office 2
+  const [date, setDate] = useState<string>("2025-09-17");
+  const [slot, setSlot] = useState<number>(1);
 
   const [stats, setStats] = useState({
     totalVisitors: 0,
@@ -29,69 +29,62 @@ const OverviewWidget: React.FC = () => {
 
   const [topSessions, setTopSessions] = useState<Session[]>([]);
   const [buildingData, setBuildingData] = useState<{ [key: string]: number }>({});
-  const [fetchData, setFetchData] = useState(false); // Button to trigger data fetch
-  const [loading, setLoading] = useState(false); // State to track loading
+  const [fetchData, setFetchData] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Corrected building IDs with names for different zones
-  const zoneBuildings: Record<string, { name: string; id: number }[]> = {
-    zone1: [
-      { name: "Drawing Office 2", id: 13 },
-      { name: "Department of Manufacturing and Industrial Engineering", id: 15 },
-      { name: "Corridor", id: 17 },
-      { name: "Lecture Room (middle-right)", id: 19 },
-      { name: "Structures Laboratory", id: 21 },
-      { name: "Lecture Room (bottom-right)", id: 23 },
-      { name: "Engineering Library", id: 10 },
+  // ✅ Updated building IDs mapping
+  const zoneBuildings: Record<string, { name: string; id: string }[]> = {
+    "1": [
+      { name: "Drawing Office 2", id: "B13" },
+      { name: "Department of Manufacturing and Industrial Engineering", id: "B15" },
+      { name: "Structures Laboratory", id: "B6" },
+      { name: "Engineering Library", id: "B10" },
     ],
-    zone2: [
-      { name: "Drawing Office 1", id: 33 },
-      { name: "Professor E.O.E. Pereira Theatre", id: 16 },
-      { name: "Administrative Building", id: 7 },
-      { name: "Security Unit", id: 12 },
-      { name: "Department of Chemical and Process Engineering", id: 11 },
-      { name: "Department Engineering Mathematics", id: 32 },
+    "2": [
+      { name: "Drawing Office 1", id: "B33" },
+      { name: "Professor E.O.E. Pereira Theatre", id: "B16" },
+      { name: "Administrative Building", id: "B7" },
+      { name: "Security Unit", id: "B12" },
+      { name: "Department of Chemical and Process Engineering", id: "B11" },
     ],
-    zone3: [
-      { name: "Department of Electrical and Electronic Engineering", id: 34 },
-      { name: "Department of Computer Engineering", id: 20 },
-      { name: "Electrical and Electronic Workshop", id: 19 },
-      { name: "Surveying Lab", id: 31 },
-      { name: "Soil Lab", id: 31 },
-      { name: "Materials Lab", id: 28 },
+    "3": [
+      { name: "Department of Electrical and Electronic Engineering", id: "B34" },
+      { name: "Department of Computer Engineering", id: "B20" },
+      { name: "Electrical and Electronic Workshop", id: "B19" },
+      { name: "Surveying and Soil Lab", id: "B31" },
+      { name: "Materials Lab", id: "B28" },
     ],
-    zone4: [
-      { name: "Fluids Lab", id: 30 },
-      { name: "New Mechanics Lab", id: 24 },
-      { name: "Applied Mechanics Lab", id: 23 },
-      { name: "Thermodynamics Lab", id: 29 },
-      { name: "Generator Room", id: 4 },
-      { name: "Engineering Workshop", id: 2 },
-      { name: "Engineering Carpentry Shop", id: 1 },
+    "4": [
+      { name: "Fluids Lab", id: "B30" },
+      { name: "New Mechanics Lab", id: "B24" },
+      { name: "Applied Mechanics Lab", id: "B23" },
+      { name: "Thermodynamics Lab", id: "B29" },
+      { name: "Generator Room", id: "B4" },
+      { name: "Engineering Workshop", id: "B2" },
+      { name: "Engineering Carpentry Shop", id: "B1" },
     ],
   };
 
   const slotMap: Record<string, number> = {
-    "10am-1pm": 1, // Slot 1
-    "1pm-4pm": 2,  // Slot 2
-    "4pm-7pm": 3,  // Slot 3
+    "10am-1pm": 1,
+    "1pm-4pm": 2,
+    "4pm-7pm": 3,
   };
 
-  // Handle timeRange change to update the slot value
   const handleTimeRangeChange = (range: string) => {
     setTimeRange(range);
-    setSlot(slotMap[range]); // Update the slot based on selected time range
+    setSlot(slotMap[range]);
   };
 
-  // Fetch stats based on selected building, time range, and date when the button is clicked
   useEffect(() => {
-    if (!fetchData) return; // Don't fetch data if fetchData is false
+    if (!fetchData) return;
 
     async function fetchStats() {
-      setLoading(true);  // Start loading
+      setLoading(true);
 
       try {
         const baseURL = "http://localhost:5006/analytics";
-        console.log(`Fetching data for building: B${building}, Date: ${date}, Slot: ${slot}`);
+        console.log(`Fetching data for building: ${building}, Date: ${date}, Slot: ${slot}`);
 
         const [
           totalVisitorsRes,
@@ -101,20 +94,13 @@ const OverviewWidget: React.FC = () => {
           topSessionsRes,
           buildingDataRes,
         ] = await Promise.all([
-          axios.get(`${baseURL}/total-visitors`, { params: { buildingId: `B${building}`, date, slot } }),
-          axios.get(`${baseURL}/total-checkins`, { params: { buildingId: `B${building}`, date, slot } }),
-          axios.get(`${baseURL}/avg-duration`, { params: { buildingId: `B${building}`, date, slot } }),
-          axios.get(`${baseURL}/repeat-visitors`, { params: { buildingId: `B${building}`, date, slot } }),
+          axios.get(`${baseURL}/total-visitors`, { params: { buildingId: building, date, slot } }),
+          axios.get(`${baseURL}/total-checkins`, { params: { buildingId: building, date, slot } }),
+          axios.get(`${baseURL}/avg-duration`, { params: { buildingId: building, date, slot } }),
+          axios.get(`${baseURL}/repeat-visitors`, { params: { buildingId: building, date, slot } }),
           axios.get(`${baseURL}/top3-buildings`, { params: { date, slot } }),
           axios.get(`${baseURL}/visitors-per-building`, { params: { date, slot } }),
         ]);
-
-        console.log("Total Visitors Data:", totalVisitorsRes.data);
-        console.log("Total Check-ins Data:", totalCheckInsRes.data);
-        console.log("Average Duration Data:", avgDurationRes.data);
-        console.log("Repeat Visitors Data:", repeatVisitorsRes.data);
-        console.log("Top Sessions Data:", topSessionsRes.data);
-        console.log("Visitors per Building Data:", buildingDataRes.data);
 
         setStats({
           totalVisitors: totalVisitorsRes.data.total_visitors || 0,
@@ -123,42 +109,37 @@ const OverviewWidget: React.FC = () => {
           repeatVisitors: repeatVisitorsRes.data.repeatVisitors || 0,
         });
 
-        // Set visitors per building data
         const buildingStats: { [key: string]: number } = {};
         buildingDataRes.data.forEach((item: any) => {
           buildingStats[item.building] = parseInt(item.total_visitors);
         });
         setBuildingData(buildingStats);
 
-        // Map the top 3 buildings data to our session state
         const sessions: Session[] = topSessionsRes.data
           ? topSessionsRes.data.map((s: any) => ({
               name: s.building,
               visitors: parseInt(s.visitors),
-              color: "blue", // Customize the color as needed
+              color: "blue",
             }))
           : [];
         setTopSessions(sessions);
 
-        // Set fetchData to false after fetching data to prevent repeated fetching
         setFetchData(false);
       } catch (err) {
         console.error("Failed to fetch stats", err);
-        setTopSessions([]); // clear sessions on error
+        setTopSessions([]);
       } finally {
-        setLoading(false);  // Stop loading once the data is fetched
+        setLoading(false);
       }
     }
 
     fetchStats();
-  }, [fetchData, building, timeRange, date, slot]); // Trigger fetchStats when fetchData changes
+  }, [fetchData, building, timeRange, date, slot]);
 
-  // Handle Date selection
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value);
   };
 
-  // Prepare bar chart data using the building data
   const barChartData = {
     labels: Object.keys(buildingData),
     datasets: [
@@ -172,7 +153,6 @@ const OverviewWidget: React.FC = () => {
     ],
   };
 
-  // Define color classes for stat elements
   const getColorClasses = (color: string) => {
     const colors = {
       blue: "from-blue-500 to-blue-600",
@@ -197,21 +177,23 @@ const OverviewWidget: React.FC = () => {
     <div className="space-y-8">
       {/* 🔽 Filters Row */}
       <div className="flex flex-wrap justify-end gap-3">
+        {/* Zone Dropdown */}
         <select
           value={zone}
           onChange={(e) => {
             const selectedZone = e.target.value;
             setZone(selectedZone);
-            setBuilding(zoneBuildings[selectedZone][0].id.toString()); // Ensure the correct buildingId is set
+            setBuilding(zoneBuildings[selectedZone][0].id);
           }}
           className="border rounded-lg px-3 py-2"
         >
-          <option value="zone1">Zone A</option>
-          <option value="zone2">Zone B</option>
-          <option value="zone3">Zone C</option>
-          <option value="zone4">Zone D</option>
+          <option value="1">Zone A</option>
+          <option value="2">Zone B</option>
+          <option value="3">Zone C</option>
+          <option value="4">Zone D</option>
         </select>
 
+        {/* Building Dropdown */}
         <select value={building} onChange={(e) => setBuilding(e.target.value)} className="border rounded-lg px-3 py-2">
           {zoneBuildings[zone].map((b) => (
             <option key={b.id} value={b.id}>
@@ -220,7 +202,7 @@ const OverviewWidget: React.FC = () => {
           ))}
         </select>
 
-        {/* Time Slot Filter (Human-readable only, internally mapped to slot number) */}
+        {/* Time Range Dropdown */}
         <select value={timeRange} onChange={(e) => handleTimeRangeChange(e.target.value)} className="border rounded-lg px-3 py-2">
           <option value="10am-1pm">10am-1pm</option>
           <option value="1pm-4pm">1pm-4pm</option>
@@ -238,13 +220,12 @@ const OverviewWidget: React.FC = () => {
         />
 
         <button
-          onClick={() => setFetchData(true)} // Trigger the data fetch when the button is clicked
+          onClick={() => setFetchData(true)}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg"
         >
           Get Data
         </button>
 
-        {/* Loading spinner */}
         {loading && (
           <div className="flex items-center text-sm text-gray-500">
             <Loader size={16} className="animate-spin mr-2" />
@@ -288,7 +269,7 @@ const OverviewWidget: React.FC = () => {
         })}
       </div>
 
-      {/* 📈 Bar Chart and Top Sessions side by side */}
+      {/* 📈 Bar Chart and Top Sessions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* 📈 Bar Chart */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -299,27 +280,19 @@ const OverviewWidget: React.FC = () => {
               <span className="text-sm text-gray-600">{timeRange}</span>
             </div>
           </div>
-          <div className="h-64 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl flex items-center justify-center border border-white/50">
+          <div className="h-64">
             <Bar 
               data={barChartData} 
               options={{
                 responsive: true,
                 scales: {
-                  x: {
-                    display: false, // Hide the x-axis labels
-                  },
+                  x: { display: false },
                 },
                 plugins: {
                   tooltip: {
                     callbacks: {
-                      title: function (tooltipItem) {
-                        const label = tooltipItem[0].label;
-                        return label; // Show the building name on hover
-                      },
-                      label: function (tooltipItem) {
-                        const value = tooltipItem.raw;
-                        return `Visitors: ${value}`; // Show the visitor count on hover
-                      },
+                      title: (tooltipItem) => tooltipItem[0].label,
+                      label: (tooltipItem) => `Visitors: ${tooltipItem.raw}`,
                     },
                   },
                 },
@@ -328,7 +301,7 @@ const OverviewWidget: React.FC = () => {
           </div>
         </div>
 
-        {/* 📈 Popular Sessions */}
+        {/* 📈 Top Sessions */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-900">Top Sessions</h3>
