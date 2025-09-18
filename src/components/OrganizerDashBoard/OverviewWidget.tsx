@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { TrendingUp, Users, MapPin, Clock, BarChart3 } from "lucide-react";
+import { TrendingUp, Users, MapPin, Clock, BarChart3, RefreshCw } from "lucide-react";
 
 const OverviewWidget: React.FC = () => {
-  // ✅ Default: Zone A, Drawing Office 2, Last 1 Hour
-  const [timeRange, setTimeRange] = useState("1h");
+  // Default: Zone A, Drawing Office 2, Time Slot 10AM–1PM
+  const [timeRange, setTimeRange] = useState("10-1");
   const [zone, setZone] = useState("zone1");
   const [building, setBuilding] = useState("booth22");
 
-  // ✅ Zone → Buildings mapping
+  // Zone → Buildings mapping
   const zoneBuildings: Record<string, { id: string; name: string }[]> = {
     zone1: [
       { name: "Drawing Office 2", id: "booth22" },
@@ -67,6 +67,13 @@ const OverviewWidget: React.FC = () => {
       change: "+15%",
       icon: Clock,
       color: "purple",
+    },
+    {
+      label: "Visitor Repeats",
+      value: building === "booth22" ? "96" : "732",
+      change: "+6%",
+      icon: RefreshCw,
+      color: "orange",
     },
   ];
 
@@ -130,16 +137,14 @@ const OverviewWidget: React.FC = () => {
           onChange={(e) => setTimeRange(e.target.value)}
           className="border rounded-lg px-3 py-2"
         >
-          <option value="1h">Last 1 Hour</option>
-          <option value="3h">Last 3 Hours</option>
-          <option value="5h">Last 5 Hours</option>
-          <option value="12h">Last 12 Hours</option>
-          <option value="24h">Last 24 Hours</option>
+          <option value="10-1">10AM – 1PM</option>
+          <option value="1-4">1PM – 4PM</option>
+          <option value="4-7">4PM – 7PM</option>
         </select>
       </div>
 
       {/* 📊 Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -189,9 +194,11 @@ const OverviewWidget: React.FC = () => {
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
               <span className="text-sm text-gray-600">
-                {timeRange === "1h"
-                  ? "Data (Last 1 Hour)"
-                  : `Data (${timeRange})`}
+                {timeRange === "10-1"
+                  ? "Data (10AM – 1PM)"
+                  : timeRange === "1-4"
+                  ? "Data (1PM – 4PM)"
+                  : "Data (4PM – 7PM)"}
               </span>
             </div>
           </div>
@@ -202,9 +209,11 @@ const OverviewWidget: React.FC = () => {
               </div>
               <p className="text-gray-600 font-medium">Chart placeholder</p>
               <p className="text-gray-400 text-sm">
-                {timeRange === "1h"
-                  ? "Attendance trends (Last 1 Hour)"
-                  : `Attendance trends (${timeRange})`}
+                {timeRange === "10-1"
+                  ? "Attendance trends (10AM – 1PM)"
+                  : timeRange === "1-4"
+                  ? "Attendance trends (1PM – 4PM)"
+                  : "Attendance trends (4PM – 7PM)"}
               </p>
             </div>
           </div>

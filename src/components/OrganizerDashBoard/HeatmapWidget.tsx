@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { MapPin, Thermometer, Activity, Clock, Users } from "lucide-react";
+import axios from "axios";
 import ChatClient from "./ChatClient";
 
 interface Building {
@@ -20,7 +21,9 @@ interface Zone {
 const HeatmapWidget: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState("1h");
   const [zoneFilter, setZoneFilter] = useState("zoneA");
-  const [buildingFilter, setBuildingFilter] = useState("all");
+
+  // State for API data
+  const [apiData, setApiData] = useState<any | null>(null);
 
   const allZones: Record<string, Zone> = {
     zoneA: {
@@ -81,15 +84,50 @@ const HeatmapWidget: React.FC = () => {
     },
   };
 
-  const buildingsInZone = useMemo(
+  // Fetch API data whenever filters change
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const hours = timeFilter.replace("h", "");
+        const zoneName = allZones[zoneFilter]?.name || "";
+        const building = "All Buildings";
+
+        // Fetch all metrics separately
+        const [activityRes, peakRes, dwellRes] = await Promise.all([
+          axios.get(
+            `http://localhost:3000/api/heatmap/activity-level?zone=${encodeURIComponent(
+              zoneName
+            )}&hours=${hours}&building=${encodeURIComponent(building)}`
+          ),
+          axios.get(
+            `http://localhost:3000/api/heatmap/peak-occupancy?zone=${encodeURIComponent(
+              zoneName
+            )}&hours=${hours}&building=${encodeURIComponent(building)}`
+          ),
+          axios.get(
+            `http://localhost:3000/api/heatmap/avg-dwell-time?zone=${encodeURIComponent(
+              zoneName
+            )}&hours=${hours}&building=${encodeURIComponent(building)}`
+          ),
+        ]);
+
+        setApiData({
+          activity_level: activityRes.data,
+          peak_occupancy: peakRes.data,
+          avg_dwell_time: dwellRes.data,
+        });
+      } catch (err) {
+        console.error("Error fetching analytics:", err);
+      }
+    };
+
+    fetchAnalytics();
+  }, [zoneFilter, timeFilter]);
+
+  const filteredBuildings = useMemo(
     () => allZones[zoneFilter]?.buildings || [],
     [zoneFilter]
   );
-
-  const filteredBuildings = useMemo(() => {
-    if (buildingFilter === "all") return buildingsInZone;
-    return buildingsInZone.filter((b) => b.name === buildingFilter);
-  }, [buildingFilter, buildingsInZone]);
 
   const colorClasses: Record<string, string> = {
     red: "from-red-500 to-red-600",
@@ -103,30 +141,16 @@ const HeatmapWidget: React.FC = () => {
       <div className="flex flex-wrap justify-end gap-3">
         <select
           value={zoneFilter}
-          onChange={(e) => {
-            setZoneFilter(e.target.value);
-            setBuildingFilter("all");
-          }}
+          onChange={(e) => setZoneFilter(e.target.value)}
           className="border px-3 py-2 rounded"
         >
-          {Object.entries(allZones).map(([key, zone]) => (
-            <option key={key} value={key}>
-              {zone.name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={buildingFilter}
-          onChange={(e) => setBuildingFilter(e.target.value)}
-          className="border px-3 py-2 rounded"
-        >
-          <option value="all">All Buildings</option>
-          {buildingsInZone.map((b) => (
-            <option key={b.id} value={b.name}>
-              {b.name}
-            </option>
-          ))}
+          {Object.entries(allZones)
+            .filter(([key]) => key !== "dummy") // 🚀 Hide Event Venue
+            .map(([key, zone]) => (
+              <option key={key} value={key}>
+                {zone.name}
+              </option>
+            ))}
         </select>
 
         <select
@@ -161,71 +185,72 @@ const HeatmapWidget: React.FC = () => {
         <ChatClient socketUrl="ws://localhost:5008" />
       </div>
 
-      {/* Heatmap */}
-      {/*<div className="relative h-96 bg-gradient-to-br from-blue-50 via-yellow-50 to-red-50 rounded-2xl flex items-center justify-center border border-white/50 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="w-full h-full"
-            style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.3) 1px, transparent 0)`,
-              backgroundSize: "20px 20px",
-            }}
-          ></div>
-        </div>
-        <div className="text-center relative z-10">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <MapPin size={32} className="text-blue-600" />
-          </div>
-          <p className="text-gray-500 mt-2">
-            Showing {allZones[zoneFilter].name} [
-            {buildingFilter === "all" ? "All Buildings" : buildingFilter}] [{timeFilter}]
-          </p>
-        </div>
-      </div>
-        */}
-
       {/* Analytics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {filteredBuildings.map((b) => (
-          <div
-            key={b.id}
-            className={`group bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
-          >
-            <div className="flex items-center space-x-3 mb-4">
-              <div className={`p-3 rounded-xl text-white shadow-lg ${colorClasses[b.color]}`}>
-                <b.icon size={20} />
-              </div>
-              <div>
-                <h4 className="font-bold text-gray-900 text-lg">{b.name}</h4>
+        {filteredBuildings.map((b) => {
+          // 🔄 Match API data with building names
+          const peakFromApi =
+            apiData?.peak_occupancy?.find(
+              (p: any) => p.building === b.name
+            )?.peak_occupancy ?? b.peak;
+
+          const dwellFromApi =
+            apiData?.avg_dwell_time?.find(
+              (d: any) => d.building === b.name
+            )?.avg_dwell_minutes ?? b.dwell;
+
+          const activityFromApi =
+            apiData?.activity_level?.details_per_building?.find(
+              (a: any) => a.building === b.name
+            )?.activity_level ?? b.activity;
+
+          return (
+            <div
+              key={b.id}
+              className={`group bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
+            >
+              <div className="flex items-center space-x-3 mb-4">
                 <div
-                  className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${
-                    b.activity === "High"
-                      ? "bg-red-100 text-red-700"
-                      : b.activity === "Medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
+                  className={`p-3 rounded-xl text-white shadow-lg ${colorClasses[b.color]}`}
                 >
-                  {b.activity} Activity
+                  <b.icon size={20} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-lg">{b.name}</h4>
+                  <div
+                    className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${
+                      activityFromApi === "High"
+                        ? "bg-red-100 text-red-700"
+                        : activityFromApi === "Medium"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {activityFromApi} Activity
+                  </div>
                 </div>
               </div>
+              <div className="flex justify-between items-center p-3 bg-gray-50/50 rounded-xl">
+                <span className="text-sm text-gray-600 flex items-center space-x-2">
+                  <Users size={14} />
+                  <span>Peak Occupancy:</span>
+                </span>
+                <span className="text-sm font-bold text-gray-900">
+                  {peakFromApi}
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-gray-50/50 rounded-xl">
+                <span className="text-sm text-gray-600 flex items-center space-x-2">
+                  <Clock size={14} />
+                  <span>Avg. Dwell Time:</span>
+                </span>
+                <span className="text-sm font-bold text-gray-900">
+                  {dwellFromApi} min
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50/50 rounded-xl">
-              <span className="text-sm text-gray-600 flex items-center space-x-2">
-                <Users size={14} />
-                <span>Peak Occupancy:</span>
-              </span>
-              <span className="text-sm font-bold text-gray-900">{b.peak}</span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-gray-50/50 rounded-xl">
-              <span className="text-sm text-gray-600 flex items-center space-x-2">
-                <Clock size={14} />
-                <span>Avg. Dwell Time:</span>
-              </span>
-              <span className="text-sm font-bold text-gray-900">{b.dwell} min</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
