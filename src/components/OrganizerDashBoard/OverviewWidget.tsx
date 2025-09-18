@@ -332,7 +332,7 @@ const OverviewWidget: React.FC = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-900">Top Sessions</h3>
-            <div className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">Top 2</div>
+            <div className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">Top 3</div>
           </div>
           <div className="space-y-4">
             {topSessions.length === 0 ? (
