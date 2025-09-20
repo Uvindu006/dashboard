@@ -14,11 +14,8 @@ interface Session {
 }
 
 const OverviewWidget: React.FC = () => {
-  const [timeRange, setTimeRange] = useState("10am-1pm");
   const [zone, setZone] = useState("1");
   const [building, setBuilding] = useState<string>("B13"); // Default: Drawing Office 2
-  const [date, setDate] = useState<string>("2025-09-17");
-  const [slot, setSlot] = useState<number>(1);
 
   const [stats, setStats] = useState({
     totalVisitors: 0,
@@ -65,17 +62,6 @@ const OverviewWidget: React.FC = () => {
     ],
   };
 
-  const slotMap: Record<string, number> = {
-    "10am-1pm": 1,
-    "1pm-4pm": 2,
-    "4pm-7pm": 3,
-  };
-
-  const handleTimeRangeChange = (range: string) => {
-    setTimeRange(range);
-    setSlot(slotMap[range]);
-  };
-
   useEffect(() => {
     if (!fetchData) return;
 
@@ -84,7 +70,7 @@ const OverviewWidget: React.FC = () => {
 
       try {
         const baseURL = "http://localhost:5006/analytics";
-        console.log(`Fetching data for building: ${building}, Date: ${date}, Slot: ${slot}`);
+        console.log(`Fetching data for building: ${building}`);
 
         const [
           totalVisitorsRes,
@@ -94,12 +80,12 @@ const OverviewWidget: React.FC = () => {
           topSessionsRes,
           buildingDataRes,
         ] = await Promise.all([
-          axios.get(`${baseURL}/total-visitors`, { params: { buildingId: building, date, slot } }),
-          axios.get(`${baseURL}/total-checkins`, { params: { buildingId: building, date, slot } }),
-          axios.get(`${baseURL}/avg-duration`, { params: { buildingId: building, date, slot } }),
-          axios.get(`${baseURL}/repeat-visitors`, { params: { buildingId: building, date, slot } }),
-          axios.get(`${baseURL}/top3-buildings`, { params: { date, slot } }),
-          axios.get(`${baseURL}/visitors-per-building`, { params: { date, slot } }),
+          axios.get(`${baseURL}/total-visitors`, { params: { buildingId: building } }),
+          axios.get(`${baseURL}/total-checkins`, { params: { buildingId: building } }),
+          axios.get(`${baseURL}/avg-duration`, { params: { buildingId: building } }),
+          axios.get(`${baseURL}/repeat-visitors`, { params: { buildingId: building } }),
+          axios.get(`${baseURL}/top3-buildings`),
+          axios.get(`${baseURL}/visitors-per-building`),
         ]);
 
         setStats({
@@ -134,11 +120,7 @@ const OverviewWidget: React.FC = () => {
     }
 
     fetchStats();
-  }, [fetchData, building, timeRange, date, slot]);
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDate(e.target.value);
-  };
+  }, [fetchData, building]);
 
   const barChartData = {
     labels: Object.keys(buildingData),
@@ -202,23 +184,6 @@ const OverviewWidget: React.FC = () => {
           ))}
         </select>
 
-        {/* Time Range Dropdown */}
-        <select value={timeRange} onChange={(e) => handleTimeRangeChange(e.target.value)} className="border rounded-lg px-3 py-2">
-          <option value="10am-1pm">10am-1pm</option>
-          <option value="1pm-4pm">1pm-4pm</option>
-          <option value="4pm-7pm">4pm-7pm</option>
-        </select>
-
-        {/* Date Picker */}
-        <input
-          type="date"
-          value={date}
-          onChange={handleDateChange}
-          min="2025-09-17"
-          max="2025-09-28"
-          className="border rounded-lg px-3 py-2"
-        />
-
         <button
           onClick={() => setFetchData(true)}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg"
@@ -275,10 +240,6 @@ const OverviewWidget: React.FC = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-900">Visitors per Building</h3>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">{timeRange}</span>
-            </div>
           </div>
           <div className="h-64">
             <Bar 

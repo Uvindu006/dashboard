@@ -35,7 +35,7 @@ function OrganizerDashBoard({ onLogout }: OrganizerDashBoardProps) {
         {/* Header */}
         <Header
           eventInfo={{
-            title: "EngEX 2025",
+            title: "EngEx 2025 - PeraVerse Exhibition Management System by PeraCom",
             date: "30 Aug 2025",
             location: "University of Peradeniya",
           }}
