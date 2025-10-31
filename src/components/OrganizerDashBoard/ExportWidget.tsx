@@ -10,7 +10,13 @@ interface ExportItem {
 }
 
 const ExportWidget: React.FC = () => {
-  const currentDay = 3; // 🔹 Set the current exhibition day here
+  // Automatically calculate current exhibition day
+  const startDate = new Date("2025-10-27"); // set your exhibition start date here
+  const today = new Date();
+  const diffInTime = today.getTime() - startDate.getTime();
+  const diffInDays = Math.floor(diffInTime / (1000 * 60 * 60 * 24));
+  const currentDay = diffInDays + 1; // Day 1 = start date
+
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [exportHistory, setExportHistory] = useState<ExportItem[]>([
     { name: "Attendance & Usage Report.pdf", type: "PDF", date: "2025-09-23", status: "completed" },

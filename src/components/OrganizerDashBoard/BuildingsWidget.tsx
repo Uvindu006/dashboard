@@ -70,6 +70,9 @@ const BuildingsWidget: React.FC = () => {
       { name: "Engineering Workshop", id: 20 },
       { name: "Engineering Carpentry Shop", id: 21 },
     ],
+    "5": [
+      { name: "Environmental Lab", id: 14 },
+    ],
   });
 
   const token = localStorage.getItem("authToken");
@@ -286,6 +289,8 @@ const BuildingsWidget: React.FC = () => {
         >
           <Plus size={16} /> Add Building
         </button>
+
+
       </div>
 
       {/* Form Modal */}
@@ -308,6 +313,7 @@ const BuildingsWidget: React.FC = () => {
                   <option value={2}>B</option>
                   <option value={3}>C</option>
                   <option value={4}>D</option>
+                  <option value={5}>Other</option>
                 </select>
               </div>
 

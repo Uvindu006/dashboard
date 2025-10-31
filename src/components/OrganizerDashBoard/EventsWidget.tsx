@@ -473,6 +473,8 @@ const EventsWidget: React.FC = () => {
                 />
               </div>
 
+
+
               {/* Buttons */}
               <div className="flex justify-end gap-2">
                 <button

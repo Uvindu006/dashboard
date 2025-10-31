@@ -4,7 +4,7 @@ import axios from "axios";
 import ChatClient from "./ChatClient";
 
 interface Building {
-  id: string; // 🔄 now string
+  id: string; // now string
   name: string;
   peak: number;
   dwell: number;
@@ -27,58 +27,59 @@ const HeatmapWidget: React.FC = () => {
 
   const allZones: Record<string, Zone> = {
     zoneA: {
-      name: "Zone A",
-      buildings: [
-        { id: "B13", name: "Drawing Office 2", peak: 95, dwell: 18, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B15", name: "Department of Manufacturing and Industrial Engineering", peak: 140, dwell: 24, activity: "High", color: "red", icon: Users },
-        { id: "B6", name: "Structures Laboratory", peak: 120, dwell: 22, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B10", name: "Engineering Library", peak: 160, dwell: 30, activity: "High", color: "red", icon: Users },
-      ],
-    },
-    zoneB: {
-      name: "Zone B",
-      buildings: [
-        { id: "B33", name: "Drawing Office 1", peak: 90, dwell: 16, activity: "Low", color: "green", icon: Clock },
-        { id: "B16", name: "Professor E.O.E. Pereira Theatre", peak: 180, dwell: 28, activity: "High", color: "red", icon: Users },
-        { id: "B7", name: "Administrative Building", peak: 100, dwell: 18, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B12", name: "Security Unit", peak: 70, dwell: 12, activity: "Low", color: "green", icon: Clock },
-        { id: "B11", name: "Department of Chemical and Process Engineering", peak: 150, dwell: 25, activity: "High", color: "red", icon: Users },
-      ],
-    },
-    zoneC: {
-      name: "Zone C",
-      buildings: [
-        { id: "B34", name: "Department of Electrical and Electronic Engineering", peak: 160, dwell: 28, activity: "High", color: "red", icon: Users },
-        { id: "B20", name: "Department of Computer Engineering", peak: 140, dwell: 22, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B19", name: "Electrical and Electronic Workshop", peak: 100, dwell: 18, activity: "Low", color: "green", icon: Clock },
-        { id: "B31", name: "Surveying and Soil Lab", peak: 95, dwell: 15, activity: "Low", color: "green", icon: Clock },
-        { id: "B28", name: "Materials Lab", peak: 115, dwell: 19, activity: "Medium", color: "yellow", icon: Activity },
-      ],
-    },
-    zoneD: {
-      name: "Zone D",
-      buildings: [
-        { id: "B30", name: "Fluids Lab", peak: 125, dwell: 22, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B24", name: "New Mechanics Lab", peak: 135, dwell: 23, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B23", name: "Applied Mechanics Lab", peak: 145, dwell: 24, activity: "High", color: "red", icon: Users },
-        { id: "B29", name: "Thermodynamics Lab", peak: 155, dwell: 26, activity: "High", color: "red", icon: Users },
-        { id: "B4", name: "Generator Room", peak: 65, dwell: 10, activity: "Low", color: "green", icon: Clock },
-        { id: "B2", name: "Engineering Workshop", peak: 175, dwell: 27, activity: "High", color: "red", icon: Users },
-        { id: "B1", name: "Engineering Carpentry Shop", peak: 80, dwell: 12, activity: "Low", color: "green", icon: Clock },
-      ],
-    },
-    other: {
-      name: "Other",
-      buildings: [
-        { id: "B14", name: "Faculty Canteen", peak: 110, dwell: 20, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B17", name: "Electronic Lab", peak: 100, dwell: 18, activity: "Low", color: "green", icon: Clock },
-        { id: "B18", name: "Washrooms", peak: 60, dwell: 8, activity: "Low", color: "green", icon: Clock },
-        { id: "B22", name: "Environmental Lab", peak: 95, dwell: 16, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B32", name: "Department of Engineering Mathematics", peak: 120, dwell: 20, activity: "Medium", color: "yellow", icon: Activity },
-        { id: "B8", name: "Canteen", peak: 130, dwell: 22, activity: "High", color: "red", icon: Users },
-        { id: "B9", name: "Lecture Room 10/11", peak: 90, dwell: 15, activity: "Low", color: "green", icon: Clock },
-      ],
-    },
+  name: "Zone A",
+  buildings: [
+    { id: "B13", name: "Drawing Office 2", peak: 0, dwell: 0, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B15", name: "Department of Manufacturing and Industrial Engineering", peak: 0, dwell: 0, activity: "High", color: "red", icon: Users },
+    { id: "B6", name: "Structures Laboratory", peak: 0, dwell: 0, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B10", name: "Engineering Library", peak: 0, dwell: 0, activity: "High", color: "red", icon: Users },
+  ],
+},
+zoneB: {
+  name: "Zone B",
+  buildings: [
+    { id: "B33", name: "Drawing Office 1", peak: 0, dwell: 0, activity: "Low", color: "green", icon: Clock },
+    { id: "B16", name: "Professor E.O.E. Pereira Theatre", peak: 0, dwell: 0, activity: "High", color: "red", icon: Users },
+    { id: "B7", name: "Administrative Building", peak: 0, dwell: 0, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B12", name: "Security Unit", peak: 0, dwell: 0, activity: "Low", color: "green", icon: Clock },
+    { id: "B11", name: "Department of Chemical and Process Engineering", peak: 0, dwell: 0, activity: "High", color: "red", icon: Users },
+  ],
+},
+zoneC: {
+  name: "Zone C",
+  buildings: [
+    { id: "B34", name: "Department of Electrical and Electronic Engineering", peak: 200, dwell: 15, activity: "High", color: "red", icon: Users },
+    { id: "B20", name: "Department of Computer Engineering", peak: 30, dwell: 10, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B19", name: "Electrical and Electronic Workshop", peak: 20, dwell: 20, activity: "Low", color: "green", icon: Clock },
+    { id: "B31", name: "Surveying and Soil Lab", peak: 10, dwell: 10, activity: "Low", color: "green", icon: Clock },
+    { id: "B28", name: "Materials Lab", peak: 40, dwell: 15, activity: "Medium", color: "yellow", icon: Activity },
+  ],
+},
+zoneD: {
+  name: "Zone D",
+  buildings: [
+    { id: "B30", name: "Fluids Lab", peak: 0, dwell: 0, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B24", name: "New Mechanics Lab", peak: 0, dwell: 0, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B23", name: "Applied Mechanics Lab", peak: 0, dwell: 0, activity: "High", color: "red", icon: Users },
+    { id: "B29", name: "Thermodynamics Lab", peak: 0, dwell: 0, activity: "High", color: "red", icon: Users },
+    { id: "B4", name: "Generator Room", peak: 0, dwell: 0, activity: "Low", color: "green", icon: Clock },
+    { id: "B2", name: "Engineering Workshop", peak: 0, dwell: 0, activity: "High", color: "red", icon: Users },
+    { id: "B1", name: "Engineering Carpentry Shop", peak: 0, dwell: 0, activity: "Low", color: "green", icon: Clock },
+  ],
+},
+other: {
+  name: "Other",
+  buildings: [
+    { id: "B14", name: "Faculty Canteen", peak: 0, dwell: 0, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B17", name: "Electronic Lab", peak: 0, dwell: 0, activity: "Low", color: "green", icon: Clock },
+    { id: "B18", name: "Washrooms", peak: 0, dwell: 0, activity: "Low", color: "green", icon: Clock },
+    { id: "B22", name: "Environmental Lab", peak: 0, dwell: 0, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B32", name: "Department of Engineering Mathematics", peak: 0, dwell: 0, activity: "Medium", color: "yellow", icon: Activity },
+    { id: "B8", name: "Canteen", peak: 0, dwell: 0, activity: "High", color: "red", icon: Users },
+    { id: "B9", name: "Lecture Room 10/11", peak: 0, dwell: 0, activity: "Low", color: "green", icon: Clock },
+  ],
+},
+
   };
 
   // Fetch API data whenever filters change
@@ -89,19 +90,22 @@ const HeatmapWidget: React.FC = () => {
         const zoneName = allZones[zoneFilter]?.name || "";
         const building = "All";
 
+        //without encoding - zone A = zone A
+        //with encoding - zone A = zone%20A
+
         const [activityRes, peakRes, dwellRes] = await Promise.all([
           axios.get(
-            `http://localhost:3000/api/heatmap/activity-level?zone=${encodeURIComponent(
+            `http://localhost:5007/api/heatmap/activity-level?zone=${encodeURIComponent(
               zoneName
             )}&hours=${hours}&building=${encodeURIComponent(building)}`
           ),
           axios.get(
-            `http://localhost:3000/api/heatmap/peak-occupancy?zone=${encodeURIComponent(
+            `http://localhost:5007/api/heatmap/peak-occupancy?zone=${encodeURIComponent(
               zoneName
             )}&hours=${hours}&building=${encodeURIComponent(building)}`
           ),
           axios.get(
-            `http://localhost:3000/api/heatmap/avg-dwell-time?zone=${encodeURIComponent(
+            `http://localhost:5007/api/heatmap/avg-dwell-time?zone=${encodeURIComponent(
               zoneName
             )}&hours=${hours}&building=${encodeURIComponent(building)}`
           ),
