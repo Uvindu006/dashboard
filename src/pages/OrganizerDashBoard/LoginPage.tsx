@@ -21,6 +21,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) =
     setLoading(true);  // Show loading state when trying to log in
     setErrorMessage("");  // Clear previous error messages
 
+    // If both fields are empty, assume frontend-only hosting and bypass backend validation.
+    // This allows entry without filling anything (useful when backend isn't available).
+    if (!email && !password) {
+      // store a dummy token/user so other parts of the app behave as if authenticated
+      localStorage.setItem("authToken", "frontend-bypass-token");
+      localStorage.setItem("authUser", JSON.stringify({ email: "guest" }));
+      // notify parent and navigate
+      onLogin();
+      navigate("/overview");
+      return;
+    }
+
     // Make POST request to login endpoint
     try {
       const response = await axios.post("http://localhost:5000/auths/login", {
@@ -39,7 +51,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) =
         // After login, navigate to the overview page
         navigate("/overview");  // Navigate to overview page
       }
-    } catch (err) {
+    } catch (err: any) {
       setLoading(false);  // Reset loading state after response
       if (err.response?.status === 400) {
         setErrorMessage("Email and Password are required.");
@@ -70,7 +82,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) =
               onChange={(e) => setEmail(e.target.value)}
               className="form-input"
               placeholder="Enter your email"
-              required
             />
           </div>
 
@@ -82,7 +93,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, goToRegister }) =
               onChange={(e) => setPassword(e.target.value)}
               className="form-input"
               placeholder="Enter your password"
-              required
             />
           </div>
 
